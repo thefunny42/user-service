@@ -15,7 +15,7 @@ Jinja2==3.1.4
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 mdurl==0.1.2
-orjson==3.10.3
+orjson==3.10.4
 pydantic==2.7.3
 pydantic-settings==2.3.1
 pydantic_core==2.18.4
