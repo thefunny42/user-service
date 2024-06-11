@@ -19,6 +19,10 @@ that is an array. To create a user that array must contain at least `admin`.
 
 The authorization is deletegated to [OPA](https://www.openpolicyagent.org/).
 
+The users are stored in [MongoDB](https://www.mongodb.com/), but are capped to
+10000 since we return them in one request as JSON. The use-case need to refined, with either options to batch or other options more suitable to larger
+collections.
+
 ## Deployment
 
 ### Testing
@@ -30,6 +34,7 @@ The following configuration variables are available:
 - `USER_SERVICE_KEY`: JWT key used to authenticate to the service.
 - `USER_SERVICE_ISSUER`: Issuer expected in the JWT key used to authenticate.
 - `USER_SERVICE_LOG`: Custom logging configuration (a default one is provided).
+- `USER_SERVICE_DATABASE`: URL to the a MongoDB database to store the users.
 - `AUTHORIZATION_ENDPOINT`: URL to the OPA server.
 - `AUTHORIZATION_POLICY`: Policy to use on the OPA server (default to userservice).
 
@@ -38,8 +43,9 @@ The following configuration variables are available:
 
 There is a dev container that can be used with vscode. It will take care of
 starting an [OPA](https://www.openpolicyagent.org/) server in the background
-to server the policies. [Hatch](https://hatch.pypa.io/latest/) is used as a
-packaging tool, to run test and code analysis.
+to server the policies and a [MongoDB](https://www.mongodb.com/) server.
+[Hatch](https://hatch.pypa.io/latest/) is used as a packaging tool, to run
+test and code analysis.
 
 ### Testing with curl
 

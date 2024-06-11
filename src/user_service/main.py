@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from . import api, security
+from . import api, settings
 
 __version__ = "0.1.0"
 
@@ -22,5 +22,5 @@ def main():  # pragma: no cover
         host="0.0.0.0",
         port=8000,
         server_header=False,
-        log_config=security.get_settings().user_service_log,
+        log_config=settings.get_settings().user_service_log,
     )

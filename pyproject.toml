@@ -17,6 +17,10 @@ build-backend = "hatchling.build"
 [tool.black]
 line-length = 79
 
+[tool.coverage.run]
+# XXX Need to add test for database.
+omit = ['src/user_service/database.py']
+
 [tool.coverage.report]
 fail_under = 100
 

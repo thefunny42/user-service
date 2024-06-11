@@ -6,11 +6,10 @@ from typing import Annotated
 import httpx
 import jwt
 import jwt.exceptions
-import pydantic
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 
-from . import utils
+from .settings import Settings, get_settings
 
 logger = logging.getLogger("user_service.security")
 client = httpx.AsyncClient()
@@ -18,22 +17,20 @@ client = httpx.AsyncClient()
 ALGORITHM = "HS256"
 
 
-class Settings(utils.Settings):
-    user_service_key: str = pydantic.Field(default=...)
-    user_service_issuer: str | None = pydantic.Field(default=None)
-    user_service_log: str | None = pydantic.Field(default=None)
-    authorization_endpoint: str = pydantic.Field(default=...)
-    authorization_policy: str = pydantic.Field(default="userservice")
+class Auth:
+
+    def __init__(self, settings: Annotated[Settings, Depends(get_settings)]):
+        self.settings = settings
 
     def generate_token(self, *roles: str):
         return jwt.encode(
             {
                 "roles": list(roles),
-                "iss": self.user_service_issuer,
+                "iss": self.settings.user_service_issuer,
                 "exp": datetime.datetime.now(tz=datetime.timezone.utc)
                 + datetime.timedelta(seconds=180),
             },
-            self.user_service_key,
+            self.settings.user_service_key,
             algorithm=ALGORITHM,
         )
 
@@ -41,9 +38,9 @@ class Settings(utils.Settings):
         try:
             payload = jwt.decode(
                 token,
-                self.user_service_key,
+                self.settings.user_service_key,
                 algorithms=[ALGORITHM],
-                issuer=self.user_service_issuer,
+                issuer=self.settings.user_service_issuer,
                 options={"requires": ["exp", "iss", "roles"]},
             )
         except jwt.exceptions.InvalidTokenError:
@@ -54,8 +51,8 @@ class Settings(utils.Settings):
         self, method: str, path: list[str], roles: list[str]
     ) -> bool:
         response = await client.post(
-            f"{self.authorization_endpoint}"
-            f"/v1/data/{self.authorization_policy}",
+            f"{self.settings.authorization_endpoint}"
+            f"/v1/data/{self.settings.authorization_policy}",
             json={
                 "input": {
                     "method": method,
@@ -73,21 +70,14 @@ class Settings(utils.Settings):
         )
 
 
-settings = Settings()
-
-
-def get_settings():  # pragma: no cover
-    return settings
-
-
 async def validate_token(
     request: Request,
-    settings: Annotated[Settings, Depends(get_settings)],
+    auth: Annotated[Auth, Depends()],
     credentials: Annotated[
         HTTPAuthorizationCredentials, Depends(HTTPBearer())
     ],
 ):
-    roles = settings.authenticate(credentials.credentials)
+    roles = auth.authenticate(credentials.credentials)
     if roles is None:
         logger.info("Could not authenticate request")
         raise HTTPException(
@@ -101,7 +91,7 @@ async def validate_token(
         "method": request.method,
         "path": request.url.path.strip("/").split("/"),
     }
-    if not await settings.authorize(**query):
+    if not await auth.authorize(**query):
         logger.info(f"Could not authorize request with: {query} ")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -118,4 +108,4 @@ def main():  # pragma: no cover
     )
     parser.add_argument("role", nargs="*")
     args = parser.parse_args()
-    print(settings.generate_token(*args.role))
+    print(Auth(get_settings()).generate_token(*args.role))
