@@ -1,9 +1,6 @@
 name: Test policies
 on:
   push:
-    paths:
-      - 'policies/**'
-      - '.github/workflows/test-policies.yml'
 jobs:
   test:
     runs-on: ubuntu-latest
