@@ -1,0 +1,24 @@
+# Compose file used in the dev container
+name: user-service
+services:
+  user-service:
+    build:
+      context: .
+    image: ghcr.io/thefunny42/user-service:main
+    environment:
+      - AUTHORIZATION_ENDPOINT=http://opa:8181
+    ports:
+      - 8000:8000
+  opa:
+    image: openpolicyagent/opa:edge
+    command:
+    - "run"
+    - "--server"
+    - "--set=decision_logs.console=true"
+    - "/policies"
+    ports:
+      - 8181:8181
+    volumes:
+      - type: bind
+        source: policies
+        target: /policies

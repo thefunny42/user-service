@@ -1,0 +1,20 @@
+name: Test policies
+on:
+  push:
+    paths:
+      - 'policies/**'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup OPA
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
+      - name: Code Analysis
+        working-directory: policies
+        run: opa fmt --diff --fail
+      - name: Test
+        working-directory: policies
+        run: opa test -v .
