@@ -3,15 +3,11 @@ import secrets
 import fastapi.testclient
 import httpx
 import pytest
+import pytest_asyncio
 import respx
 
 from user_service import database, main, models, security
-
-settings = security.Settings(
-    user_service_key=secrets.token_hex(16),
-    user_service_issuer="test",
-    authorization_endpoint="http://localhost:8181",
-)
+from user_service.settings import get_settings
 
 
 class UserRepository(models.Users):
@@ -36,8 +32,9 @@ class BearerAuth(httpx.Auth):
         yield request
 
 
-def get_test_settings():
-    return settings
+@pytest.fixture(scope="module")
+def settings():
+    return get_settings()
 
 
 @pytest.fixture(scope="module")
@@ -46,29 +43,40 @@ def invalid_token():
 
 
 @pytest.fixture(scope="module")
-def token():
+def token(settings):
     return BearerAuth(security.Auth(settings).generate_token())
 
 
 @pytest.fixture(scope="module")
-def admin_token():
+def admin_token(settings):
     return BearerAuth(security.Auth(settings).generate_token("admin"))
 
 
-@pytest.fixture
-def users():
+@pytest.fixture()
+def mocked_users():
     yield UserRepository(users=[])
 
 
+@pytest_asyncio.fixture()
+async def users(settings):
+    collection = await database.get_collection(settings)
+    repository = database.UserRepository(collection)
+    yield repository
+    await collection.drop()
+    database.CACHE.clear()
+
+
 @pytest.fixture()
-def client(users):
-    main.app.dependency_overrides[security.get_settings] = get_test_settings
-    main.app.dependency_overrides[database.UserRepository] = lambda: users
+def client(mocked_users):
+    "This client will use a mocked user source and not mongoDB"
+    main.app.dependency_overrides[database.UserRepository] = (
+        lambda: mocked_users
+    )
     yield fastapi.testclient.TestClient(main.app)
 
 
 @pytest.fixture
-def mocked_opa():
+def mocked_opa(settings):
     with respx.mock(base_url=settings.authorization_endpoint) as mock:
         yield mock.post(
             f"/v1/data/{settings.authorization_policy}", name="opa"

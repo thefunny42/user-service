@@ -30,7 +30,7 @@ async def _create_collection(
     # modify how the API works to the outside, since working with large JSON
     # objects is not recommanded either.
     name = model.__name__
-    if name in await database.list_collection_names():
+    if name in await database.list_collection_names():  # pragma: no cover
         return database.get_collection(name)
     schema = model.model_json_schema()
     return await database.create_collection(

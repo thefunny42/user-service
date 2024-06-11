@@ -6,8 +6,8 @@ from user_service import models
 
 
 @pytest.mark.asyncio
-async def test_get_users(client, users, mocked_opa_allow, token):
-    await users.add(
+async def test_get_users(client, mocked_users, mocked_opa_allow, token):
+    await mocked_users.add(
         models.User(name="Arthur Accroc", email="arthur@example.com")
     )
 
@@ -27,8 +27,8 @@ async def test_get_users(client, users, mocked_opa_allow, token):
     }
 
 
-def test_get_users_empty(client, users, mocked_opa_allow, token):
-    assert users.users == []
+def test_get_users_empty(client, mocked_users, mocked_opa_allow, token):
+    assert mocked_users.users == []
 
     response = client.get("/api/users", auth=token)
     assert response.status_code == 200
@@ -37,8 +37,10 @@ def test_get_users_empty(client, users, mocked_opa_allow, token):
 
 
 @pytest.mark.asyncio
-async def test_get_users_admin(client, users, mocked_opa_allow, admin_token):
-    await users.add(
+async def test_get_users_admin(
+    client, mocked_users, mocked_opa_allow, admin_token
+):
+    await mocked_users.add(
         models.User(name="Arthur Accroc", email="arthur@example.com")
     )
 
@@ -76,8 +78,8 @@ def test_get_users_failed_token(client, mocked_opa_fail, token):
     assert mocked_opa_fail.called
 
 
-def test_add_users(client, mocked_opa_allow, users, admin_token):
-    assert users.users == []
+def test_add_users(client, mocked_opa_allow, mocked_users, admin_token):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -85,7 +87,7 @@ def test_add_users(client, mocked_opa_allow, users, admin_token):
         auth=admin_token,
     )
     assert response.status_code == 201
-    assert users.users == [
+    assert mocked_users.users == [
         models.User(name="Ford Perfect", email="ford@example.com")
     ]
     assert mocked_opa_allow.called
@@ -99,8 +101,10 @@ def test_add_users(client, mocked_opa_allow, users, admin_token):
     }
 
 
-def test_add_users_but_not_tonio(client, mocked_opa_allow, users, admin_token):
-    assert users.users == []
+def test_add_users_but_not_tonio(
+    client, mocked_opa_allow, mocked_users, admin_token
+):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -109,12 +113,12 @@ def test_add_users_but_not_tonio(client, mocked_opa_allow, users, admin_token):
     )
     assert response.status_code == 503
     assert response.json() == {"detail": "Could not add user."}
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_allow.called
 
 
-def test_add_users_invalid_token(client, users, invalid_token):
-    assert users.users == []
+def test_add_users_invalid_token(client, mocked_users, invalid_token):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -123,11 +127,11 @@ def test_add_users_invalid_token(client, users, invalid_token):
     )
     assert response.status_code == 401
     assert response.json() == {"detail": "Insufficient credentials"}
-    assert users.users == []
+    assert mocked_users.users == []
 
 
-def test_add_users_no_token(client, users):
-    assert users.users == []
+def test_add_users_no_token(client, mocked_users):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -135,13 +139,13 @@ def test_add_users_no_token(client, users):
     )
     assert response.status_code == 403
     assert response.json() == {"detail": "Not authenticated"}
-    assert users.users == []
+    assert mocked_users.users == []
 
 
 def test_add_users_unauthorized_token(
-    client, mocked_opa_disallow, users, token
+    client, mocked_opa_disallow, mocked_users, token
 ):
-    assert users.users == []
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -150,12 +154,14 @@ def test_add_users_unauthorized_token(
     )
     assert response.status_code == 401
     assert response.json() == {"detail": "Insufficient credentials"}
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_disallow.called
 
 
-def test_add_users_failed_token(client, mocked_opa_fail, users, admin_token):
-    assert users.users == []
+def test_add_users_failed_token(
+    client, mocked_opa_fail, mocked_users, admin_token
+):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -164,34 +170,40 @@ def test_add_users_failed_token(client, mocked_opa_fail, users, admin_token):
     )
     assert response.status_code == 401
     assert response.json() == {"detail": "Insufficient credentials"}
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_fail.called
 
 
-def test_add_users_no_name(client, mocked_opa_allow, users, admin_token):
-    assert users.users == []
+def test_add_users_no_name(
+    client, mocked_opa_allow, mocked_users, admin_token
+):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users", json={"email": "ford@example.com"}, auth=admin_token
     )
     assert response.status_code == 422
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_allow.called
 
 
-def test_add_users_no_email(client, mocked_opa_allow, users, admin_token):
-    assert users.users == []
+def test_add_users_no_email(
+    client, mocked_opa_allow, mocked_users, admin_token
+):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users", json={"name": "Ford Perfect"}, auth=admin_token
     )
     assert response.status_code == 422
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_allow.called
 
 
-def test_add_users_invalid_name(client, mocked_opa_allow, users, admin_token):
-    assert users.users == []
+def test_add_users_invalid_name(
+    client, mocked_opa_allow, mocked_users, admin_token
+):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -199,12 +211,14 @@ def test_add_users_invalid_name(client, mocked_opa_allow, users, admin_token):
         auth=admin_token,
     )
     assert response.status_code == 422
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_allow.called
 
 
-def test_add_users_long_name(client, mocked_opa_allow, users, admin_token):
-    assert users.users == []
+def test_add_users_long_name(
+    client, mocked_opa_allow, mocked_users, admin_token
+):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -212,12 +226,14 @@ def test_add_users_long_name(client, mocked_opa_allow, users, admin_token):
         auth=admin_token,
     )
     assert response.status_code == 422
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_allow.called
 
 
-def test_add_users_invalid_email(client, mocked_opa_allow, users, admin_token):
-    assert users.users == []
+def test_add_users_invalid_email(
+    client, mocked_opa_allow, mocked_users, admin_token
+):
+    assert mocked_users.users == []
 
     response = client.post(
         "/api/users",
@@ -225,5 +241,5 @@ def test_add_users_invalid_email(client, mocked_opa_allow, users, admin_token):
         auth=admin_token,
     )
     assert response.status_code == 422
-    assert users.users == []
+    assert mocked_users.users == []
     assert mocked_opa_allow.called
