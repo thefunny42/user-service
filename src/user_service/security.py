@@ -1,8 +1,7 @@
-import datetime
-from typing import Annotated
-
 import argparse
+import datetime
 import logging
+from typing import Annotated
 
 import httpx
 import jwt
@@ -55,7 +54,8 @@ class Settings(utils.Settings):
         self, method: str, path: list[str], roles: list[str]
     ) -> bool:
         response = await client.post(
-            f"{self.authorization_endpoint}/v1/data/{self.authorization_policy}",
+            f"{self.authorization_endpoint}"
+            f"/v1/data/{self.authorization_policy}",
             json={
                 "input": {
                     "method": method,

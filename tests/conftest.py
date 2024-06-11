@@ -2,7 +2,6 @@ import secrets
 
 import fastapi.testclient
 import httpx
-import jwt
 import pytest
 import respx
 
@@ -54,7 +53,9 @@ def client():
 @pytest.fixture
 def mocked_opa():
     with respx.mock(base_url=settings.authorization_endpoint) as mock:
-        yield mock.post(f"/v1/data/{settings.authorization_policy}", name="opa")
+        yield mock.post(
+            f"/v1/data/{settings.authorization_policy}", name="opa"
+        )
 
 
 @pytest.fixture
