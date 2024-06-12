@@ -28,7 +28,7 @@ collections.
 
 You can deploy the service for local testing on either
 [minikube](https://minikube.sigs.k8s.io/docs/) or  Docker Desktop. This can be
-done with the help of an (Helm)[https://helm.sh/] chart.
+done with the help of an [Helm](https://helm.sh/) chart.
 
 If you use minikube, first start it:
 
@@ -46,6 +46,7 @@ Install the chart (you need to provide a key for `USER_SERVICE_KEY`):
 
 You can verify that everything is running:
 
+    helm test your-name
     kubectl get all -l app.kubernetes.io/instance=your-name
 
 If you use minikube, run tunnel in a terminal to be able to access the
@@ -57,12 +58,12 @@ There is a convenience script to obtain a token.
 
 You can list the users:
 
-    MY_TOKEN=$(kubectl exec service/your-name-userservice -- /usr/local/bin/new-user-service-token)
+    MY_TOKEN=$(kubectl exec service/your-name-userservice -- /app/bin/new-user-service-token)
     curl -H "Authorization: Bearer $MY_TOKEN" http://localhost:8000/api/users
 
 You can add a user:
 
-    MY_TOKEN=$(kubectl exec service/your-name-userservice -- /usr/local/bin/new-user-service-token admin)
+    MY_TOKEN=$(kubectl exec service/your-name-userservice -- /app/bin/new-user-service-token admin)
     curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users
 
 Alternatively you can use the docs to test the service at http://localhost:8000.

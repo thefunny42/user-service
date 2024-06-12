@@ -1,0 +1,13 @@
+You can verify the setup with:
+
+helm test {{ .Release.Name }}
+
+You can list users with:
+
+MY_TOKEN=$(kubectl exec service/{{ include "userservice.fullname" . }} -- /app/bin/new-user-service-token)
+curl -H "Authorization: Bearer $MY_TOKEN" http://localhost:8000/api/users
+
+You can add a user with:
+
+MY_TOKEN=$(kubectl exec service/{{ include "userservice.fullname" . }} -- /app/bin/new-user-service-token admin)
+curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users

@@ -18,9 +18,10 @@ EXPOSE 8000
 
 FROM base as final
 
-RUN --mount=type=bind,source=.,target=.,rw  \
+RUN /usr/local/bin/python3 -m venv /app
+RUN --mount=type=bind,source=.,target=src,rw  \
     --mount=type=cache,target=/root/.cache \
-    pip install -r requirements.txt .
+    cd src && pip install -r requirements.txt .
 
 RUN addgroup --system --gid 1000 python
 RUN adduser --system --uid 1000 -G python -H python
@@ -31,4 +32,4 @@ USER 1000:1000
 
 EXPOSE  8000
 
-CMD ["/usr/local/bin/user-service"]
+CMD ["/app/bin/user-service"]
