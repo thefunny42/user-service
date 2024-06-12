@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "userservice.fullname" . }}
+data:
+  authorization-endpoint: "http://{{ include "userservice.opaFullname" . }}:{{ .Values.service.opaPort }}"
+  user-service-database: "mongodb://{{ include "userservice.mongoFullname" . }}:{{ .Values.service.mongoPort }}/users"
+  user-service-issuer: {{ .Values.issuer }}

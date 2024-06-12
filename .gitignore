@@ -1,5 +1,6 @@
 .pytest_cache/*
 .coverage
+charts/*/charts/*
 dist/*
 htmlcov/*
 **/__pycache__/*

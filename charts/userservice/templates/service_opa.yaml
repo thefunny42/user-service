@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "userservice.opaFullname" . }}
+  labels:
+    {{- include "userservice.opaLabels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.opaType }}
+  ports:
+    - port: {{ .Values.service.opaPort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "userservice.opaSelectorLabels" . | nindent 4 }}

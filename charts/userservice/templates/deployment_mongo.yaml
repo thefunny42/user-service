@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "userservice.mongoFullname" . }}
+  labels:
+    {{- include "userservice.mongoLabels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "userservice.mongoSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "userservice.mongoLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "userservice.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "mongo:7-jammy"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: mongo
+              containerPort: {{ .Values.service.mongoPort }}
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: database
+              mountPath: /data/db
+      volumes:
+        - name: database
+          hostPath:
+            path: /data/{{ include "userservice.mongoFullname" . }}/

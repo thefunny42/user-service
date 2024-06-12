@@ -14,18 +14,66 @@ Simple user service with two endpoints:
     If the requirements are not meet the service with return an 422 error.
 
 To use those endpoints you need to be authenticated with a Bearer token that
-is a JWT token using `HS256` and the configured secret, with a property `roles`
+is a JWT token using `HS256` and the configured key, with a property `roles`
 that is an array. To create a user that array must contain at least `admin`.
 
 The authorization is deletegated to [OPA](https://www.openpolicyagent.org/).
 
 The users are stored in [MongoDB](https://www.mongodb.com/), but are capped to
-10000 since we return them in one request as JSON. The use-case need to refined, with either options to batch or other options more suitable to larger
+10000 since we return them in one request as JSON. The use-case need to refined,
+with either options to batch or other options more suitable to larger
 collections.
 
 ## Deployment
 
-### Testing
+You can deploy the service for local testing on either
+[minikube](https://minikube.sigs.k8s.io/docs/) or  Docker Desktop. This can be
+done with the help of an (Helm)[https://helm.sh/] chart.
+
+If you use minikube, first start it:
+
+    minikube start
+
+Please be aware that the provided chart is only intended for local use only. It
+will take care of the dependencies, such as MongoDB and OPA, however you
+definitely do not want to run MongoDB like this and in a production you would
+rather rely on an external service provided through an operator to you. In a
+similar way, the OPA server would probably serve more policies.
+
+Install the chart (you need to provide a key for `USER_SERVICE_KEY`):
+
+    helm install your-name charts/userservice --set key=$(openssl rand --hex 32)
+
+You can verify that everything is running:
+
+    kubectl get all -l app.kubernetes.io/instance=your-name
+
+If you use minikube, run tunnel in a terminal to be able to access the
+application:
+
+    minikube tunnel
+
+There is a convenience script to obtain a token.
+
+You can list the users:
+
+    MY_TOKEN=$(kubectl exec service/your-name-userservice -- /usr/local/bin/new-user-service-token)
+    curl -H "Authorization: Bearer $MY_TOKEN" http://localhost:8000/api/users
+
+You can add a user:
+
+    MY_TOKEN=$(kubectl exec service/your-name-userservice -- /usr/local/bin/new-user-service-token admin)
+    curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users
+
+Alternatively you can use the docs to test the service at http://localhost:8000.
+
+Cleanup with:
+
+    helm uninstall your-name
+
+If you use minikube:
+
+    minikube stop
 
 ## Configuration
 
@@ -39,7 +87,6 @@ The following configuration variables are available:
 - `AUTHORIZATION_ENDPOINT`: URL to the OPA server.
 - `AUTHORIZATION_POLICY`: Policy to use on the OPA server (default to userservice).
 
-
 ## Development
 
 There is a dev container that can be used with vscode. It will take care of
@@ -48,7 +95,7 @@ to server the policies and a [MongoDB](https://www.mongodb.com/) server.
 [Hatch](https://hatch.pypa.io/latest/) is used as a packaging tool, to run
 test and code analysis.
 
-### Testing with curl
+### Testing
 
 There is an helper script to generate a token with the configure key. First
 start the service in a terminal:
@@ -64,3 +111,5 @@ You can add a user:
 
     MY_TOKEN=$(hatch run new-user-service-token admin)
     curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users
+
+Alternatively you can use your browser and test it http://localhost:8000/docs.
