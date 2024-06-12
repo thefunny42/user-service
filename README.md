@@ -114,3 +114,14 @@ You can add a user:
     curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users
 
 Alternatively you can use your browser and test it http://localhost:8000/docs.
+
+# What else might be done
+
+1. Configure authentication to interact with the OPA agent, currently that is
+   not protected.
+
+2. Configure authentication to MongoDB.
+
+3. Implement network policies for ingress and egress.
+
+4. Use SSL certificates for the JWT tokens depending on the use-case.
