@@ -63,7 +63,7 @@ async def users(settings):
     repository = database.UserRepository(collection)
     yield repository
     await collection.drop()
-    database.CACHE.clear()
+    database.close()
 
 
 @pytest.fixture()

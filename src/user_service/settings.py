@@ -11,6 +11,7 @@ class Settings(pydantic_settings.BaseSettings):
     user_service_issuer: str | None = pydantic.Field(default=None)
     user_service_log: str | None = pydantic.Field(default=None)
     user_service_database: str = pydantic.Field(default=...)
+    user_service_size: int = pydantic.Field(default=10000)
     authorization_endpoint: str = pydantic.Field(default=...)
     authorization_policy: str = pydantic.Field(default="userservice")
 

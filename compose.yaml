@@ -24,7 +24,7 @@ services:
         source: policies
         target: /policies
   database:
-    image: mongo:6
+    image: mongo:7-jammy
     volumes:
       - database:/data/db
     ports:

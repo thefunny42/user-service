@@ -35,6 +35,7 @@ The following configuration variables are available:
 - `USER_SERVICE_ISSUER`: Issuer expected in the JWT key used to authenticate.
 - `USER_SERVICE_LOG`: Custom logging configuration (a default one is provided).
 - `USER_SERVICE_DATABASE`: URL to the a MongoDB database to store the users.
+- `USER_SERVICE_SIZE`: Number of allowed users.
 - `AUTHORIZATION_ENDPOINT`: URL to the OPA server.
 - `AUTHORIZATION_POLICY`: Policy to use on the OPA server (default to userservice).
 
