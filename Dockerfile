@@ -31,4 +31,4 @@ USER 1000:1000
 
 EXPOSE  8000
 
-CMD ["/usr/local/bin/user_service"]
+CMD ["/usr/local/bin/user-service"]
