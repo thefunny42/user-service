@@ -1,6 +1,7 @@
 import pytest
 
 from user_service import models
+from user_service.database import UnavailableError
 
 
 @pytest.mark.asyncio
@@ -17,13 +18,15 @@ async def test_user_repository(users):
 
 @pytest.mark.asyncio
 async def test_read(database):
-    collection = await database.ready()
+    collection = await database.ready(autocreate=True)
     assert collection.name == "User"
 
     collection = await database.ready()
     assert collection.name == "User"
 
     collection.drop()
+    with pytest.raises(UnavailableError):
+        await database.ready(autocreate=False)
 
 
 @pytest.mark.asyncio

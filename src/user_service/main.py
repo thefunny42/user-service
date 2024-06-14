@@ -10,6 +10,7 @@ __version__ = "0.1.0"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await database.connector.connect().ready(autocreate=True)
     yield
     database.connector.close()
 

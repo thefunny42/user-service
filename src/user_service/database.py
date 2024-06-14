@@ -51,7 +51,7 @@ class Database[T: type[pydantic.BaseModel]]:
 
     async def get(self):
         if self.collection is None:
-            self.collection = await self.ready()
+            self.collection = await self.ready(autocreate=True)
         return self.collection
 
     async def create(self):
@@ -65,13 +65,15 @@ class Database[T: type[pydantic.BaseModel]]:
             },
         )
 
-    async def ready(self):
+    async def ready(self, autocreate=False):
         try:
             if self.name in await self.database.list_collection_names():
                 return self.database.get_collection(self.name)
-            return await self.create()
+            if autocreate:
+                return await self.create()
         except pymongo.errors.PyMongoError:
             raise UnavailableError()
+        raise UnavailableError()
 
     def close(self):
         self.client.close()

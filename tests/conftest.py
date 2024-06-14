@@ -75,16 +75,16 @@ async def users():
 @pytest_asyncio.fixture
 async def client():
     main.app.dependency_overrides.clear()
-    async with main.lifespan(main.app):
-        yield fastapi.testclient.TestClient(main.app)
+    with fastapi.testclient.TestClient(main.app) as client:
+        yield client
 
 
 @pytest_asyncio.fixture
 async def mocked_client(mocked_users):
     "This client will use a mocked user source and not mongoDB"
     main.app.dependency_overrides[UserRepository] = lambda: mocked_users
-    async with main.lifespan(main.app):
-        yield fastapi.testclient.TestClient(main.app)
+    with fastapi.testclient.TestClient(main.app) as client:
+        yield client
 
 
 @pytest.fixture
