@@ -6,11 +6,12 @@ import pytest
 import pytest_asyncio
 import respx
 
-from user_service import database, main, models, security
+from user_service import main, models, security
+from user_service.database import UserRepository, connector, get_collection
 from user_service.settings import get_settings
 
 
-class UserRepository(models.Users):
+class MockUserRepository(models.Users):
 
     async def add(self, user: models.User):
         if user.name == "Tonio":
@@ -54,25 +55,36 @@ def admin_token(settings):
 
 @pytest.fixture()
 def mocked_users():
-    yield UserRepository(users=[])
+    yield MockUserRepository(users=[])
 
 
-@pytest_asyncio.fixture()
-async def users(settings):
-    collection = await database.get_collection(settings)
-    repository = database.UserRepository(collection)
-    yield repository
+@pytest_asyncio.fixture
+async def database():
+    yield connector.connect()
+    connector.close()
+
+
+@pytest_asyncio.fixture
+async def users():
+    collection = await get_collection()
+    yield UserRepository(collection)
     await collection.drop()
-    database.close()
+    connector.close()
 
 
-@pytest.fixture()
-def client(mocked_users):
+@pytest_asyncio.fixture
+async def client():
+    main.app.dependency_overrides.clear()
+    async with main.lifespan(main.app):
+        yield fastapi.testclient.TestClient(main.app)
+
+
+@pytest_asyncio.fixture
+async def mocked_client(mocked_users):
     "This client will use a mocked user source and not mongoDB"
-    main.app.dependency_overrides[database.UserRepository] = (
-        lambda: mocked_users
-    )
-    yield fastapi.testclient.TestClient(main.app)
+    main.app.dependency_overrides[UserRepository] = lambda: mocked_users
+    async with main.lifespan(main.app):
+        yield fastapi.testclient.TestClient(main.app)
 
 
 @pytest.fixture

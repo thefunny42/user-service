@@ -1,15 +1,31 @@
-import uvicorn
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
 
-from . import api, settings
+import uvicorn
+from fastapi import FastAPI, HTTPException, status
+
+from . import api, database, settings
 
 __version__ = "0.1.0"
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    database.connector.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/health")
-def get_health():
+async def get_health(ready: bool = False):
+    if ready:
+        try:
+            await database.connector.connect().ready()
+        except database.UnavailableError:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
     return {}
 
 

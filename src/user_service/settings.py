@@ -35,5 +35,5 @@ class Settings(pydantic_settings.BaseSettings):
 settings = Settings()
 
 
-def get_settings():  # pragma: no cover
+def get_settings():
     return settings

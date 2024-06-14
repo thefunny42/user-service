@@ -1,7 +1,8 @@
-from typing import Annotated, Type
+from typing import Annotated
 
 import motor.motor_asyncio
 import pydantic
+import pymongo.errors
 from fastapi import Depends
 
 from .models import User
@@ -29,51 +30,80 @@ def _prepare_schema(schema):
     return schema
 
 
-async def _create_collection(
-    database: motor.motor_asyncio.AsyncIOMotorDatabase,
-    model: Type[pydantic.BaseModel],
-    size=10000,
-):
-    "Create a validated collection based on the pydantic model."
-    # Note: We limit the size of the collection since we currently load all
-    # items in memory while returning them. If the use-case is refined we can
-    # change that behavior, but in that case we should implement batching and
-    # modify how the API works to the outside, since working with large JSON
-    # objects is not recommanded either.
-    name = model.__name__
-    if name in await database.list_collection_names():  # pragma: no cover
-        return database.get_collection(name)
-    return await database.create_collection(
-        name=name,
-        capped=True,
-        size=size,
-        writeConcern={"w": 1, "j": True, "wtimeout": 10},
-        validator={"$jsonSchema": _prepare_schema(model.model_json_schema())},
-    )
+class UnavailableError(ValueError):
+    pass
 
 
-async def get_collection(settings: Annotated[Settings, Depends(get_settings)]):
-    key = settings.user_service_database
-    collection = COLLECTIONS.get(key)
-    if collection is None:
-        client = CLIENTS.get(key)
-        if client is None:
-            client = motor.motor_asyncio.AsyncIOMotorClient(key)
-            CLIENTS[key] = client
-        database = client.get_default_database()
-        collection = await _create_collection(
-            database, User, size=settings.user_service_size
+class Database[T: type[pydantic.BaseModel]]:
+
+    def __init__(self, settings: Settings, model: T):
+        self.settings = settings
+        self.client = motor.motor_asyncio.AsyncIOMotorClient(
+            self.settings.user_service_database,
         )
-        COLLECTIONS[key] = collection
-    return collection
+        self.database = self.client.get_default_database()
+        self.collection = None
+        self.model = model
+
+    @property
+    def name(self):
+        return self.model.__name__
+
+    async def get(self):
+        if self.collection is None:
+            self.collection = await self.ready()
+        return self.collection
+
+    async def create(self):
+        return await self.database.create_collection(
+            name=self.name,
+            capped=True,
+            size=self.settings.user_service_size,
+            writeConcern={"w": 1, "j": True, "wtimeout": 10},
+            validator={
+                "$jsonSchema": _prepare_schema(self.model.model_json_schema())
+            },
+        )
+
+    async def ready(self):
+        try:
+            if self.name in await self.database.list_collection_names():
+                return self.database.get_collection(self.name)
+            return await self.create()
+        except pymongo.errors.PyMongoError:
+            raise UnavailableError()
+
+    def close(self):
+        self.client.close()
 
 
-def close():
-    "Terminate all clients"
-    COLLECTIONS.clear()
-    for client in CLIENTS.values():
-        client.close()
-    CLIENTS.clear()
+class Connector[T: type[pydantic.BaseModel]]:
+    database: Database[T] | None = None
+    model: T
+
+    def __init__(self, settings: Annotated[Settings, Depends(get_settings)]):
+        self.settings = settings
+
+    def connect(self):
+        if self.database is None:
+            self.database = Database[T](self.settings, self.model)
+        return self.database
+
+    def close(self):
+        if self.database is not None:
+            self.database.close()
+        self.database = None
+
+
+class UserConnector(Connector):
+    model = User
+
+
+connector = UserConnector(get_settings())
+
+
+async def get_collection():
+    return await connector.connect().get()
 
 
 class UserRepository:

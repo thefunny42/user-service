@@ -16,6 +16,17 @@ async def test_user_repository(users):
 
 
 @pytest.mark.asyncio
+async def test_read(database):
+    collection = await database.ready()
+    assert collection.name == "User"
+
+    collection = await database.ready()
+    assert collection.name == "User"
+
+    collection.drop()
+
+
+@pytest.mark.asyncio
 async def test_mocked_user_repository(mocked_users):
     assert await mocked_users.list() == []
 
