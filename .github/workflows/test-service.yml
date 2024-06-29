@@ -51,7 +51,7 @@ jobs:
             org.opencontainers.image.licenses=BSD-2-Clause
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
