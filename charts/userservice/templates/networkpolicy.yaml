@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "userservice.fullname" . }}
+  labels:
+    {{- include "userservice.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "userservice.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+{{- if and .Values.tags.opa .Values.tags.mongodb }}
+  - Egress
+{{- end}}
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+  egress:
+{{- if and .Values.tags.opa .Values.tags.mongodb }}
+  - to:
+    - podSelector:
+        matchLabels:
+          {{- include "opa.selectorLabels" .Subcharts.opa | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.opa.service.port}}
+  - to:
+    - podSelector:
+        matchLabels:
+          {{- include "common.labels.matchLabels" .Subcharts.mongodb | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.mongodb.service.ports.mongodb}}
+{{- end }}

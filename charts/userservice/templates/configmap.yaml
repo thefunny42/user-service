@@ -3,6 +3,14 @@ kind: ConfigMap
 metadata:
   name: {{ include "userservice.fullname" . }}
 data:
+{{- if .Values.tags.opa }}
   authorization-endpoint: "http://{{ include "opa.fullname" .Subcharts.opa }}:{{ .Values.opa.service.port }}"
-  user-service-database: "mongodb://{{ include "mongo.fullname" .Subcharts.mongo }}:{{ .Values.mongo.service.port }}/users"
+{{- else }}
+  authorization-endpoint: "{{ .Values.authorizationEndpoint | required "Need an authorization endpoint" }}"
+{{- end }}
+{{- if .Values.tags.mongodb }}
+  user-service-database: "mongodb://{{ include "mongodb.fullname" .Subcharts.mongodb }}:{{ .Values.mongodb.service.ports.mongodb }}/users"
+{{- else }}
+  user-service-database: "{{ .Values.databaseUrl | required "Need a database URL" }}"
+{{- end }}
   user-service-issuer: {{ .Values.issuer }}

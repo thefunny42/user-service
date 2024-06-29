@@ -1,0 +1,9 @@
+dependencies:
+- name: mongodb
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 15.6.11
+- name: opa
+  repository: file://../opa
+  version: 0.65.0
+digest: sha256:0cdbb827d6660c0353be28828138ae6505604d0d83e703a7ae6ffd853ab996ee
+generated: "2024-06-29T21:14:29.3276408+02:00"

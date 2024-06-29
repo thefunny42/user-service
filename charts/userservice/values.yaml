@@ -2,11 +2,17 @@
 replicaCount: 3
 issuer: "service.company.io"
 key: ""
+databaseUrl: ""
+authorizationEndpoint: ""
+
+tags:
+  opa: true
+  mongodb: true
 
 image:
   repository: ghcr.io/thefunny42/user-service
   pullPolicy: IfNotPresent
-  tag: "main"
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -76,6 +82,6 @@ tolerations: []
 
 affinity: {}
 
-opa:
-  image:
-    tag: "edge"
+mongodb:
+  auth:
+    enabled: false

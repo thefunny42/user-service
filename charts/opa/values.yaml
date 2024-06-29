@@ -1,11 +1,13 @@
-# Default values for mongo.
+# Default values for opa.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+replicaCount: 3
+
 image:
-  repository: mongo
+  repository: openpolicyagent/opa
   pullPolicy: IfNotPresent
-  tag: "7-jammy"
+  tag: ""
 
 nameOverride: ""
 fullnameOverride: ""
@@ -24,16 +26,48 @@ serviceAccount:
 podAnnotations: {}
 podLabels: {}
 
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+      - all
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
 service:
   type: ClusterIP
-  port: 27017
+  port: 8181
 
 resources:
-  # We are permissive here, because you should not use this really.
+  limits:
+    cpu: 200m
+    memory: 256Mi
   requests:
     cpu: 100m
     memory: 128Mi
 
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+  
 nodeSelector: {}
 
 tolerations: []

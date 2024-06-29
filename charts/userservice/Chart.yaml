@@ -5,5 +5,13 @@ type: application
 version: 0.1.0
 appVersion: "0.1.0"
 dependencies:
-  - name: mongo
+  - name: mongodb
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    version:  "15.6.11"
+    tags:
+      - mongodb
   - name: opa
+    version: "0.65.0"
+    repository: "file://../opa"
+    tags:
+      - opa

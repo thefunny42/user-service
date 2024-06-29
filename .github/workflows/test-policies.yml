@@ -11,8 +11,8 @@ jobs:
         with:
           version: latest
       - name: Code Analysis
-        working-directory: charts/userservice/charts/opa/policies
+        working-directory: charts/opa/policies
         run: opa fmt --diff --fail .
       - name: Test
-        working-directory: charts/userservice/charts/opa/policies
+        working-directory: charts/opa/policies
         run: opa test -v .

@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "userservice.fullname" . }}
+  labels:
+    {{- include "userservice.labels" . | nindent 4 }}
+spec:
+  minAvailable: 75%
+  selector:
+    matchLabels:
+      {{- include "userservice.selectorLabels" . | nindent 6 }}
