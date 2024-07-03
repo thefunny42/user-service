@@ -28,6 +28,7 @@ jobs:
           path: .repository
           repository: thefunny42/charts
           persist-credentials: true
+          token: "${{ secrets.GITHUB_TOKEN }}"
           ref: main
       - name: Install Helm
         uses: azure/setup-helm@v4
