@@ -1,4 +1,4 @@
-name: Test chart and policies
+name: Test policies and Build charts
 on:
   push:
 jobs:
@@ -35,14 +35,14 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
       - name: Release charts
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           for chart in $(ls charts); do
             helm dependency update charts/$chart;
             helm package charts/$chart -d .repository;
           done
           helm repo index .repository/
           cd .repository
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git add index.yaml *.tgz
           git commit -m 'Update charts'
           git push origin main
