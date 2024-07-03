@@ -3,6 +3,7 @@ on:
   push:
     paths-ignore:
       - 'charts/opa/policies/**'
+      - '.github/workflows/test-chart.yml'
 
 env:
   REGISTRY: ghcr.io
