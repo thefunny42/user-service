@@ -1,6 +1,10 @@
 name: Test policies and build charts
 on:
   push:
+    paths:
+      - 'charts/**'
+      - '.github/workflows/test-chart.yml'
+
 jobs:
   test:
     runs-on: ubuntu-latest

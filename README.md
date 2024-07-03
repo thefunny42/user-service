@@ -45,7 +45,7 @@ definitely do not want to run MongoDB like this and in a production you would
 rather rely on an external service provided through an operator to you. In a
 similar way, the OPA server would probably serve more policies.
 
-Install the chart (a key is generated if not provided):
+Install the chart:
 
 ```shell
     helm repo add thefunny42 https://thefunny42.github.io/charts

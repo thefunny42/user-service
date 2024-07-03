@@ -2,7 +2,7 @@ name: Test and build service
 on:
   push:
     paths-ignore:
-      - 'charts/opa/policies/**'
+      - 'charts/**'
       - '.github/workflows/test-chart.yml'
 
 env:
