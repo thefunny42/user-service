@@ -4,7 +4,16 @@ from pymongo.errors import PyMongoError
 def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {}
+    assert response.content == b"{}"
+
+
+def test_metrics(client):
+    response = client.get("/metrics")
+    assert response.status_code == 200
+    metrics = response.text.splitlines()
+    assert "# TYPE added_users_created gauge" in metrics
+    assert "# TYPE added_users_failures_created gauge" in metrics
+    assert "# TYPE list_users_created gauge" in metrics
 
 
 def test_health_ready(client):

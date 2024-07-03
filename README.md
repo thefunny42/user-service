@@ -48,6 +48,13 @@ similar way, the OPA server would probably serve more policies.
 Install the chart (a key is generated if not provided):
 
 ```shell
+    helm repo add thefunny42 https://thefunny42.github.io/charts
+    helm install your-name thefunny42/userservice
+```
+
+Alternatively you can install it from a clone from this repository:
+
+```shell
     helm install your-name charts/userservice
 ```
 

@@ -1,4 +1,4 @@
-name: Test policies and Build charts
+name: Test policies and build charts
 on:
   push:
 jobs:
@@ -37,10 +37,11 @@ jobs:
       - name: Release charts
         run: |
           for chart in $(ls charts); do
+            helm lint charts/$chart;
             helm dependency update charts/$chart;
             helm package charts/$chart -d .repository;
           done
-          helm repo index .repository/
+          helm repo index .repository/ --url https://thefunny42.github.io/charts
           cd .repository
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"

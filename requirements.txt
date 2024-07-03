@@ -17,6 +17,7 @@ MarkupSafe==2.1.5
 mdurl==0.1.2
 motor==3.4.0
 orjson==3.10.5
+prometheus_client==0.20.0
 pydantic==2.7.4
 pydantic-settings==2.3.3
 pydantic_core==2.18.4

@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import prometheus_client
 import uvicorn
 from fastapi import FastAPI, HTTPException, status
 
@@ -16,6 +17,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/metrics", prometheus_client.make_asgi_app())
 
 
 @app.get("/health")

@@ -1,6 +1,9 @@
 {
   "name": "User service",
-  "dockerComposeFile": ["../compose.yaml", "compose.yaml"],
+  "dockerComposeFile": [
+    "../compose.yaml",
+    "compose.yaml"
+  ],
   "service": "user-service",
   "workspaceFolder": "/workspaces",
   "customizations": {
@@ -11,9 +14,15 @@
         "files.trimFinalNewlines": true,
         "files.trimTrailingWhitespace": true,
         "editor.formatOnSave": true,
+        "editor.rulers": [
+          80,
+          120
+        ],
+        "python.analysis.typeCheckingMode": "standard",
         "python.terminal.activateEnvironment": false,
-        "venvFolders": ["~/.local/share/hatch/env/virtual"],
-        "python.testing.pytestArgs": ["tests"],
+        "python.testing.pytestArgs": [
+          "tests"
+        ],
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true
       },
@@ -38,7 +47,9 @@
       "upgradePackages": "true"
     }
   },
-  "forwardPorts": [8000],
+  "forwardPorts": [
+    8000
+  ],
   "postCreateCommand": "hatch env create",
   "remoteUser": "python"
 }
