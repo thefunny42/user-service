@@ -37,8 +37,8 @@ jobs:
       - name: Release charts
         run: |
           for chart in $(ls charts); do
-            helm lint charts/$chart;
             helm dependency update charts/$chart;
+            helm lint charts/$chart;
             helm package charts/$chart -d .repository;
           done
           helm repo index .repository/ --url https://thefunny42.github.io/charts
@@ -48,4 +48,3 @@ jobs:
           git add index.yaml *.tgz
           git commit -m 'Update charts'
           git push origin main
-
