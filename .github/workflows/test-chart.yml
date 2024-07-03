@@ -1,0 +1,46 @@
+name: Test chart and policies
+on:
+  push:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup OPA
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
+      - name: Code Analysis
+        working-directory: charts/opa/policies
+        run: opa fmt --diff --fail .
+      - name: Test
+        working-directory: charts/opa/policies
+        run: opa test -v .
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          path: .repository
+          repository: charts
+          persist-credentials: true
+          ref: main
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Release charts
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          helm package charts/* -d .repository
+          helm repo index .repository/
+          cd .repository
+          git add index.yaml *.tgz
+          git commit -m 'Update charts'
+          git push origin main
+

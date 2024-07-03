@@ -21,16 +21,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: "pip"
-          cache-dependency-path: |
-            pyproject.toml
-            requirements.txt
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.11.0
         with:
            mongodb-version: 7
       - name: Install Hatch
-        run: pip install hatch
+        uses: pypa/hatch@install
       - name: Code Analysis
         run: hatch fmt --check
       - name: Test
