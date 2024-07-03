@@ -1,30 +1,13 @@
-name: Test policies and build charts
+name: Release charts
 on:
-  push:
-    paths:
-      - 'charts/**'
-      - '.github/workflows/test-chart.yml'
+  release:
+    types: [created]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup OPA
-        uses: open-policy-agent/setup-opa@v2
-        with:
-          version: latest
-      - name: Code Analysis
-        working-directory: charts/opa/policies
-        run: opa fmt --diff --fail .
-      - name: Test
-        working-directory: charts/opa/policies
-        run: opa test -v .
   release:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    needs: [test]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
