@@ -1,8 +1,10 @@
 import argparse
 import datetime
 import logging
-from typing import Annotated
+import asyncio
+from typing import Annotated, NamedTuple, Any
 
+import async_lru
 import httpx
 import jwt
 import jwt.exceptions
@@ -17,30 +19,86 @@ client = httpx.AsyncClient()
 ALGORITHM = "HS256"
 
 
+@async_lru.alru_cache()
+async def get_keys(url: str) -> dict[str, jwt.PyJWK]:
+    response = await client.get(url=url)
+    if response.status_code != 200:  # pragma: no cover
+        return {}
+    data = response.json()
+    key_set = jwt.PyJWKSet.from_dict(data)
+    return {
+        key.key_id: key
+        for key in key_set.keys
+        if key.public_key_use in {"sig", None} and key.key_id
+    }
+
+
+class TokenInformation(NamedTuple):
+    algorithm: str
+    key: str | Any
+    headers: dict | None = None
+
+
 class Auth:
 
     def __init__(self, settings: Annotated[Settings, Depends(get_settings)]):
         self.settings = settings
 
-    def generate_token(self, *roles: str):
+    async def __get_information(self, token: str | None = None):
+        if self.settings.user_service_key is not None:
+            key = self.settings.user_service_key.get_secret_value()
+            return TokenInformation(key=key, algorithm=ALGORITHM)
+        if self.settings.user_service_jwks_url is None:  # pragma: no cover
+            return None
+        url = str(self.settings.user_service_jwks_url)
+        keys = await get_keys(url)
+        if token:
+            header = jwt.get_unverified_header(token)
+            if "kid" not in header:  # pragma: no cover
+                return None
+            if header["kid"] not in keys:  # pragma: no cover
+                get_keys.cache_invalidate(url)
+                keys = await get_keys(url)
+                if header["kid"] not in keys:
+                    return None
+            return TokenInformation(
+                key=keys[header["kid"]].key, algorithm=header["alg"]
+            )
+        for key in keys.values():
+            if key.key_type == "EC":
+                # XXX We assume ES256 for the moment.
+                return TokenInformation(
+                    headers={"kid": key.key_id}, key=key.key, algorithm="ES256"
+                )
+        return None  # pragma: no cover
+
+    async def generate_token(self, *roles: str):
+        information = await self.__get_information()
+        assert information is not None
         return jwt.encode(
             {
                 "roles": list(roles),
                 "iss": self.settings.user_service_issuer,
+                "aud": self.settings.user_service_audience,
                 "exp": datetime.datetime.now(tz=datetime.timezone.utc)
                 + datetime.timedelta(seconds=180),
             },
-            self.settings.user_service_key,
-            algorithm=ALGORITHM,
+            information.key,
+            algorithm=information.algorithm,
+            headers=information.headers,
         )
 
-    def authenticate(self, token: str) -> list[str] | None:
+    async def authenticate(self, token: str) -> list[str] | None:
+        information = await self.__get_information(token)
+        if information is None:  # pragma: no cover
+            return None
         try:
             payload = jwt.decode(
                 token,
-                self.settings.user_service_key,
-                algorithms=[ALGORITHM],
+                information.key,
+                algorithms=[information.algorithm],
                 issuer=self.settings.user_service_issuer,
+                audience=self.settings.user_service_audience or None,
                 options={"requires": ["exp", "iss", "roles"]},
             )
         except jwt.exceptions.InvalidTokenError:
@@ -51,8 +109,7 @@ class Auth:
         self, method: str, path: list[str], roles: list[str]
     ) -> bool:
         response = await client.post(
-            f"{self.settings.authorization_endpoint}"
-            f"/v1/data/{self.settings.authorization_policy}",
+            self.settings.authorization_url,
             json={
                 "input": {
                     "method": method,
@@ -77,7 +134,7 @@ async def validate_token(
         HTTPAuthorizationCredentials, Depends(HTTPBearer())
     ],
 ):
-    roles = auth.authenticate(credentials.credentials)
+    roles = await auth.authenticate(credentials.credentials)
     if roles is None:
         logger.info("Could not authenticate request")
         raise HTTPException(
@@ -101,6 +158,10 @@ async def validate_token(
     logger.info(f"Authorized request with: {query} ")
 
 
+async def print_generated_token(*roles: str):
+    print(await Auth(get_settings()).generate_token(*roles))
+
+
 def main():  # pragma: no cover
     parser = argparse.ArgumentParser(
         prog="new-user-service-token",
@@ -108,4 +169,4 @@ def main():  # pragma: no cover
     )
     parser.add_argument("role", nargs="*")
     args = parser.parse_args()
-    print(Auth(get_settings()).generate_token(*args.role))
+    asyncio.run(print_generated_token(*args.role))

@@ -39,7 +39,7 @@ class Database[T: type[pydantic.BaseModel]]:
     def __init__(self, settings: Settings, model: T):
         self.settings = settings
         self.client = motor.motor_asyncio.AsyncIOMotorClient(
-            self.settings.user_service_database,
+            str(self.settings.user_service_database),
         )
         self.database = self.client.get_default_database()
         self.collection = None

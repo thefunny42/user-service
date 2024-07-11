@@ -1,9 +1,11 @@
 # Default values for userservice.
 replicaCount: 3
 issuer: "service.company.io"
-key: ""
-databaseUrl: ""
-authorizationEndpoint: ""
+audience: 
+key: 
+databaseUrl: 
+jwksUrl:
+authorizationEndpoint:
 
 tags:
   opa: true

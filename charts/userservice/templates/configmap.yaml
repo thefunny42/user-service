@@ -4,13 +4,17 @@ metadata:
   name: {{ include "userservice.fullname" . }}
 data:
 {{- if .Values.tags.opa }}
-  authorization-endpoint: "http://{{ include "opa.fullname" .Subcharts.opa }}:{{ .Values.opa.service.port }}"
+  authorization_endpoint: "http://{{ include "opa.fullname" .Subcharts.opa }}:{{ .Values.opa.service.port }}"
 {{- else }}
-  authorization-endpoint: "{{ .Values.authorizationEndpoint | required "Need an authorization endpoint" }}"
+  authorization_endpoint: "{{ .Values.authorizationEndpoint | required "Need an authorization endpoint" }}"
 {{- end }}
 {{- if .Values.tags.mongodb }}
-  user-service-database: "mongodb://{{ include "mongodb.fullname" .Subcharts.mongodb }}:{{ .Values.mongodb.service.ports.mongodb }}/users"
+  user_service_database: "mongodb://{{ include "mongodb.fullname" .Subcharts.mongodb }}:{{ .Values.mongodb.service.ports.mongodb }}/users"
 {{- else }}
-  user-service-database: "{{ .Values.databaseUrl | required "Need a database URL" }}"
+  user_service_database: "{{ .Values.databaseUrl | required "Need a database URL" }}"
 {{- end }}
-  user-service-issuer: {{ .Values.issuer }}
+  user_service_issuer: {{ .Values.issuer }}
+  user_service_audience: {{ .Values.audience }}
+{{- if .Values.jwksUrl }}
+  user_service_jwks_url: {{ .Values.jwksUrl }}
+{{- end }}

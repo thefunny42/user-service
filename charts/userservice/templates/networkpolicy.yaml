@@ -10,7 +10,7 @@ spec:
       {{- include "userservice.selectorLabels" . | nindent 6 }}
   policyTypes:
   - Ingress
-{{- if and .Values.tags.opa .Values.tags.mongodb }}
+{{- if and .Values.tags.opa .Values.tags.mongodb (not .Values.jwksUrl) }}
   - Egress
 {{- end}}
   ingress:
@@ -18,7 +18,7 @@ spec:
     - protocol: TCP
       port: {{ .Values.service.port }}
   egress:
-{{- if and .Values.tags.opa .Values.tags.mongodb }}
+{{- if and .Values.tags.opa .Values.tags.mongodb (not .Values.jwksUrl) }}
   - to:
     - podSelector:
         matchLabels:

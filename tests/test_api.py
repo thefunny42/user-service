@@ -27,6 +27,30 @@ async def test_get_users(mocked_client, mocked_users, mocked_opa_allow, token):
     }
 
 
+@pytest.mark.asyncio
+async def test_get_users_jwks(
+    jwks_mocked_client, mocked_users, mocked_opa_allow, mocked_jwks, jwks_token
+):
+    await mocked_users.add(
+        models.User(name="Arthur Accroc", email="arthur@example.com")
+    )
+
+    response = jwks_mocked_client.get("/api/users", auth=jwks_token)
+    assert response.status_code == 200
+    assert response.json() == {
+        "users": [{"name": "Arthur Accroc", "email": "arthur@example.com"}]
+    }
+    assert mocked_opa_allow.called
+    assert len(mocked_opa_allow.calls) == 1
+    assert json.loads(mocked_opa_allow.calls[0].request.content) == {
+        "input": {
+            "method": "GET",
+            "path": ["api", "users"],
+            "roles": [],
+        }
+    }
+
+
 def test_get_users_empty(mocked_client, mocked_users, mocked_opa_allow, token):
     assert mocked_users.users == []
 
@@ -45,6 +69,26 @@ async def test_get_users_admin(
     )
 
     response = mocked_client.get("/api/users", auth=admin_token)
+    assert response.status_code == 200
+    assert response.json() == {
+        "users": [{"name": "Arthur Accroc", "email": "arthur@example.com"}]
+    }
+    assert mocked_opa_allow.called
+
+
+@pytest.mark.asyncio
+async def test_get_users_jwks_admin(
+    jwks_mocked_client,
+    mocked_users,
+    mocked_opa_allow,
+    mocked_jwks,
+    jwks_admin_token,
+):
+    await mocked_users.add(
+        models.User(name="Arthur Accroc", email="arthur@example.com")
+    )
+
+    response = jwks_mocked_client.get("/api/users", auth=jwks_admin_token)
     assert response.status_code == 200
     assert response.json() == {
         "users": [{"name": "Arthur Accroc", "email": "arthur@example.com"}]

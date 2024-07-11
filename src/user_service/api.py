@@ -10,7 +10,7 @@ router = APIRouter(
     prefix="/api", dependencies=[Depends(security.validate_token)]
 )
 
-_list_users = Counter("list_users", "List users")
+_list_users = Counter("userservice_list_users", "List users")
 
 
 @router.get(
@@ -25,8 +25,10 @@ async def list_users(
     return {"users": await repository.list()}
 
 
-_added_users = Counter("added_users", "Added users")
-_added_users_failures = Counter("added_users_failures", "Added users failures")
+_added_users = Counter("userservice_added_users", "Added users")
+_added_users_failures = Counter(
+    "userservice_added_users_failures", "Added users failures"
+)
 
 
 @_added_users_failures.count_exceptions()
