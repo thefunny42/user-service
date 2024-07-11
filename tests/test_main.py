@@ -1,6 +1,7 @@
-from pymongo.errors import PyMongoError
-from user_service import security
 import pytest
+from pymongo.errors import PyMongoError
+
+from user_service import security
 
 
 @pytest.mark.asyncio

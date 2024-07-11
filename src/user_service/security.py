@@ -1,8 +1,8 @@
 import argparse
+import asyncio
 import datetime
 import logging
-import asyncio
-from typing import Annotated, NamedTuple, Any
+from typing import Annotated, Any, NamedTuple
 
 import async_lru
 import httpx

@@ -1,6 +1,7 @@
 import functools
-from typing import Any
 import urllib.parse
+from typing import Any
+
 import pydantic
 import pydantic_settings
 

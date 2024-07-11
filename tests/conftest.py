@@ -2,15 +2,14 @@ import secrets
 
 import fastapi.testclient
 import httpx
+import pydantic_core
 import pytest
 import pytest_asyncio
-import pydantic_core
 import respx
 
 from user_service import main, models, security
 from user_service.database import UserRepository, connector, get_collection
-from user_service.settings import get_settings, Settings
-
+from user_service.settings import Settings, get_settings
 
 # This contains the private key so we can generate tokens.
 TEST_JWKS_URL = "http://somewhere/.well-known/jwks.json"
