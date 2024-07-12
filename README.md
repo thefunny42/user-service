@@ -101,8 +101,8 @@ minikube stop
 The following configuration variables are available:
 
 - `USER_SERVICE_KEY`: JWT key used to authenticate to the service.
-- `USER_SERVICE_JWKS_URL`: URL to fetch JWKS to validate JWT key (instead of key).
-- `USER_SERVICE_ISSUER`: Issuer expected in the JWT key used to authenticate.
+- `USER_SERVICE_JWKS_URL`: URL to fetch JWKS to validate JWT token (instead of key).
+- `USER_SERVICE_ISSUER`: Issuer expected in the JWT token used to authenticate.
 - `USER_SERVICE_LOG_CONFIG`: Custom logging configuration (a default one is provided).
 - `USER_SERVICE_DATABASE`: URL to the a MongoDB database to store the users.
 - `USER_SERVICE_SIZE`: Number of allowed users.

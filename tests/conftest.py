@@ -68,7 +68,7 @@ def invalid_token():
     return BearerAuth(secrets.token_urlsafe(16))
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture()
 async def token(settings):
     return BearerAuth(await security.Auth(settings).generate_token())
 
@@ -78,7 +78,7 @@ async def jwks_token(mocked_jwks, jwks_settings):
     return BearerAuth(await security.Auth(jwks_settings).generate_token())
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture()
 async def admin_token(settings):
     return BearerAuth(await security.Auth(settings).generate_token("admin"))
 
@@ -138,9 +138,17 @@ async def jwks_mocked_client(mocked_users, jwks_settings):
 @pytest.fixture
 def mocked_jwks():
     with respx.mock(base_url=TEST_JWKS_URL, assert_all_called=False) as mock:
-        yield mock.get(name="jwks").mock(
-            return_value=httpx.Response(200, json=TEST_JWKS_KEYS)
-        )
+        mocked_jwks = mock.get(name="jwks")
+        mocked_jwks.return_value = httpx.Response(200, json=TEST_JWKS_KEYS)
+        yield mocked_jwks
+
+
+@pytest.fixture
+def mocked_jwks_failed(mocked_jwks):
+    mocked_jwks.return_value = httpx.Response(500)
+    security.get_keys.cache_clear()
+    yield mocked_jwks
+    security.get_keys.cache_clear()
 
 
 @pytest.fixture

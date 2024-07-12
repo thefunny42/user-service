@@ -49,7 +49,7 @@ securityContext:
   runAsGroup: 1000
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
   port: 8000
 
 resources:

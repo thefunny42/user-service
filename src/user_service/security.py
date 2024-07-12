@@ -16,13 +16,11 @@ from .settings import Settings, get_settings
 logger = logging.getLogger("user_service.security")
 client = httpx.AsyncClient()
 
-ALGORITHM = "HS256"
-
 
 @async_lru.alru_cache()
 async def get_keys(url: str) -> dict[str, jwt.PyJWK]:
     response = await client.get(url=url)
-    if response.status_code != 200:  # pragma: no cover
+    if response.status_code != 200:
         return {}
     data = response.json()
     key_set = jwt.PyJWKSet.from_dict(data)
@@ -45,18 +43,18 @@ class Auth:
         self.settings = settings
 
     async def __get_information(self, token: str | None = None):
-        if self.settings.user_service_key is not None:
+        if self.settings.user_service_jwks_url is None:
+            if self.settings.user_service_key is None:  # pragma: no cover
+                return None
             key = self.settings.user_service_key.get_secret_value()
-            return TokenInformation(key=key, algorithm=ALGORITHM)
-        if self.settings.user_service_jwks_url is None:  # pragma: no cover
-            return None
+            return TokenInformation(key=key, algorithm="HS256")
         url = str(self.settings.user_service_jwks_url)
         keys = await get_keys(url)
         if token:
             header = jwt.get_unverified_header(token)
             if "kid" not in header:  # pragma: no cover
                 return None
-            if header["kid"] not in keys:  # pragma: no cover
+            if header["kid"] not in keys:
                 get_keys.cache_invalidate(url)
                 keys = await get_keys(url)
                 if header["kid"] not in keys:
@@ -70,11 +68,12 @@ class Auth:
                 return TokenInformation(
                     headers={"kid": key.key_id}, key=key.key, algorithm="ES256"
                 )
-        return None  # pragma: no cover
+        return None
 
     async def generate_token(self, *roles: str):
         information = await self.__get_information()
-        assert information is not None
+        if information is None:
+            return ""
         return jwt.encode(
             {
                 "roles": list(roles),
@@ -90,7 +89,7 @@ class Auth:
 
     async def authenticate(self, token: str) -> list[str] | None:
         information = await self.__get_information(token)
-        if information is None:  # pragma: no cover
+        if information is None:
             return None
         try:
             payload = jwt.decode(

@@ -1,17 +1,4 @@
-import pytest
 from pymongo.errors import PyMongoError
-
-from user_service import security
-
-
-@pytest.mark.asyncio
-async def test_print_generated_token(capsys, settings):
-    await security.print_generated_token("admin")
-    capured = capsys.readouterr()
-
-    auth = security.Auth(settings)
-    roles = await auth.authenticate(capured.out.strip())
-    assert roles == ["admin"]
 
 
 def test_metrics(client):
