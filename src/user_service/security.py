@@ -100,7 +100,8 @@ class Auth:
                 audience=self.settings.user_service_audience or None,
                 options={"requires": ["exp", "iss", "roles"]},
             )
-        except jwt.exceptions.InvalidTokenError:
+        except jwt.exceptions.InvalidTokenError as error:
+            logger.error(f"Error while validating token {error}")
             return None
         return payload.get("roles", [])
 

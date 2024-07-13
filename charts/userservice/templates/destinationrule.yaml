@@ -1,0 +1,11 @@
+{{- if .Capabilities.APIVersions.Has "networking.istio.io/v1alpha3" }}
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ include "userservice.fullname" . }}
+spec:
+  host: {{ include "userservice.fullname" . }}
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_REQUEST
+{{- end }}

@@ -58,11 +58,13 @@ spec:
                   name: {{ include "userservice.fullname" . }}
                   key: user_service_jwks_url
             {{- end }}
+            {{- if .Values.audience }}
             - name: USER_SERVICE_AUDIENCE
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "userservice.fullname" . }}
                   key: user_service_audience
+            {{- end }}
             - name: AUTHORIZATION_ENDPOINT
               valueFrom:
                 configMapKeyRef:

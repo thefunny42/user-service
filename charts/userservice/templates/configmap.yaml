@@ -6,15 +6,17 @@ data:
 {{- if .Values.tags.opa }}
   authorization_endpoint: "http://{{ include "opa.fullname" .Subcharts.opa }}:{{ .Values.opa.service.port }}"
 {{- else }}
-  authorization_endpoint: "{{ .Values.authorizationEndpoint | required "Need an authorization endpoint" }}"
+  authorization_endpoint: "{{ tpl .Values.authorizationEndpoint . | required "Need an authorization endpoint" }}"
 {{- end }}
 {{- if .Values.tags.mongodb }}
   user_service_database: "mongodb://{{ include "mongodb.fullname" .Subcharts.mongodb }}:{{ .Values.mongodb.service.ports.mongodb }}/users"
 {{- else }}
-  user_service_database: "{{ .Values.databaseUrl | required "Need a database URL" }}"
+  user_service_database: "{{ tpl .Values.databaseUrl . | required "Need a database URL" }}"
 {{- end }}
-  user_service_issuer: {{ .Values.issuer }}
-  user_service_audience: {{ .Values.audience }}
+  user_service_issuer: {{ tpl (required  "An issuer is required" .Values.issuer) . | quote }}
+{{- if .Values.audience }}
+  user_service_audience: {{ tpl .Values.audience . }}
+{{- end }}
 {{- if .Values.jwksUrl }}
-  user_service_jwks_url: {{ .Values.jwksUrl }}
+  user_service_jwks_url: {{ tpl .Values.jwksUrl . }}
 {{- end }}

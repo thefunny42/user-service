@@ -17,8 +17,8 @@ spec:
   - ports:
     - protocol: TCP
       port: {{ .Values.service.port }}
-  egress:
 {{- if and .Values.tags.opa .Values.tags.mongodb (not .Values.jwksUrl) }}
+  egress:
   - to:
     - podSelector:
         matchLabels:
