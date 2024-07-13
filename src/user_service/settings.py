@@ -32,7 +32,7 @@ class Settings(pydantic_settings.BaseSettings):
     def authorization_url(self) -> str:
         return urllib.parse.urljoin(
             str(self.authorization_endpoint),
-            "/v1/data/{self.authorization_policy}",
+            f"/v1/data/{self.authorization_policy}",
         )
 
     @pydantic.model_validator(mode="before")
