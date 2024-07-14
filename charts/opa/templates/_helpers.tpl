@@ -36,7 +36,9 @@ Common labels
 {{- define "opa.labels" -}}
 helm.sh/chart: {{ include "opa.chart" . }}
 {{ include "opa.selectorLabels" . }}
+app: {{ .Release.Name  }}
 {{- if .Chart.AppVersion }}
+version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
