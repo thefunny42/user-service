@@ -33,7 +33,9 @@ class MockUserRepository(models.Users):
     async def add(self, user: models.User):
         if user.name == "Tonio":
             return False
-        self.users.append(user)
+        self.users.append(
+            models.IdentifiedUser(id=str(len(self.users)), **user.model_dump())
+        )
         return True
 
     async def list(self):

@@ -21,7 +21,7 @@ services:
       - 8181:8181
     volumes:
       - type: bind
-        source: charts/userservice/charts/opa/policies
+        source: charts/opa/policies
         target: /policies
   database:
     image: mongo:7-jammy

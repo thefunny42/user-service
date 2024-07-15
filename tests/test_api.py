@@ -14,7 +14,9 @@ async def test_get_users(mocked_client, mocked_users, mocked_opa_allow, token):
     response = mocked_client.get("/api/users", auth=token)
     assert response.status_code == 200
     assert response.json() == {
-        "users": [{"name": "Arthur Accroc", "email": "arthur@example.com"}]
+        "users": [
+            {"name": "Arthur Accroc", "email": "arthur@example.com", "id": "0"}
+        ]
     }
     assert mocked_opa_allow.called
     assert len(mocked_opa_allow.calls) == 1
@@ -38,7 +40,9 @@ async def test_get_users_jwks(
     response = jwks_mocked_client.get("/api/users", auth=jwks_token)
     assert response.status_code == 200
     assert response.json() == {
-        "users": [{"name": "Arthur Accroc", "email": "arthur@example.com"}]
+        "users": [
+            {"name": "Arthur Accroc", "email": "arthur@example.com", "id": "0"}
+        ]
     }
     assert mocked_opa_allow.called
     assert len(mocked_opa_allow.calls) == 1
@@ -71,7 +75,9 @@ async def test_get_users_admin(
     response = mocked_client.get("/api/users", auth=admin_token)
     assert response.status_code == 200
     assert response.json() == {
-        "users": [{"name": "Arthur Accroc", "email": "arthur@example.com"}]
+        "users": [
+            {"name": "Arthur Accroc", "email": "arthur@example.com", "id": "0"}
+        ]
     }
     assert mocked_opa_allow.called
 
@@ -91,7 +97,9 @@ async def test_get_users_jwks_admin(
     response = jwks_mocked_client.get("/api/users", auth=jwks_admin_token)
     assert response.status_code == 200
     assert response.json() == {
-        "users": [{"name": "Arthur Accroc", "email": "arthur@example.com"}]
+        "users": [
+            {"name": "Arthur Accroc", "email": "arthur@example.com", "id": "0"}
+        ]
     }
     assert mocked_opa_allow.called
 
@@ -134,7 +142,9 @@ def test_add_users(mocked_client, mocked_opa_allow, mocked_users, admin_token):
     )
     assert response.status_code == 201
     assert mocked_users.users == [
-        models.User(name="Ford Perfect", email="ford@example.com")
+        models.IdentifiedUser(
+            name="Ford Perfect", email="ford@example.com", id="0"
+        )
     ]
     assert mocked_opa_allow.called
     assert len(mocked_opa_allow.calls) == 1

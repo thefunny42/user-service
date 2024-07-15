@@ -5,7 +5,7 @@ import pydantic
 import pymongo.errors
 from fastapi import Depends
 
-from .models import User
+from . import models
 from .settings import Settings, get_settings
 
 COLLECTIONS: dict[str, motor.motor_asyncio.AsyncIOMotorCollection] = {}
@@ -20,6 +20,7 @@ def _prepare_schema(schema):
         updated["properties"] = {
             name: _prepare_schema(properties)
             for name, properties in schema["properties"].items()
+            if not (name == "id" and properties.get("type") == "string")
         }
         return updated
     if "format" in schema:
@@ -98,7 +99,7 @@ class Connector[T: type[pydantic.BaseModel]]:
 
 
 class UserConnector(Connector):
-    model = User
+    model = models.User
 
 
 connector = UserConnector(get_settings())
@@ -120,10 +121,14 @@ class UserRepository:
 
     async def list(self):
         return [
-            {"name": user["name"], "email": user["email"]}
+            {
+                "name": user["name"],
+                "email": user["email"],
+                "id": str(user["_id"]),
+            }
             async for user in self.collection.find()
         ]
 
-    async def add(self, user: User):
+    async def add(self, user: models.User):
         result = await self.collection.insert_one(user.model_dump())
         return result.acknowledged

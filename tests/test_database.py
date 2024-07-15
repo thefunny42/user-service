@@ -5,14 +5,18 @@ from user_service.database import UnavailableError
 
 
 @pytest.mark.asyncio
-async def test_user_repository(users):
+async def test_user_repository(users, mocker):
     assert await users.list() == []
 
     await users.add(
         models.User(name="Arthur Accroc", email="arthur@example.com")
     )
     assert await users.list() == [
-        {"name": "Arthur Accroc", "email": "arthur@example.com"}
+        {
+            "name": "Arthur Accroc",
+            "email": "arthur@example.com",
+            "id": mocker.ANY,
+        }
     ]
 
 
@@ -37,5 +41,5 @@ async def test_mocked_user_repository(mocked_users):
         models.User(name="Arthur Accroc", email="arthur@example.com")
     )
     assert await mocked_users.list() == [
-        {"name": "Arthur Accroc", "email": "arthur@example.com"}
+        {"name": "Arthur Accroc", "email": "arthur@example.com", "id": "0"}
     ]
