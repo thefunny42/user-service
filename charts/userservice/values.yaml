@@ -1,9 +1,9 @@
 # Default values for userservice.
 replicaCount: 3
-issuer: "service.company.io"
+issuer: "http://service.example.com"
 audience:
-key: 
-databaseUrl: 
+key:
+databaseUrl:
 jwksUrl:
 authorizationEndpoint:
 

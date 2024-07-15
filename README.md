@@ -4,16 +4,17 @@ Simple user service with two endpoints:
 
 1. `/api/users` with a `GET` to retrieve a list of users as a JSON, i.e:
 
-    ```json
-        {"users":[{"name":"Arthur","email":"arthur@example.com"}]}
-    ```
+   ```json
+   { "users": [{ "name": "Arthur", "email": "arthur@example.com" }] }
+   ```
 
 2. `/api/users` with a `POST` to create a user by providing a JSON in the body
-    with:
-    - `name` as a string, up to 256 characters,
-    - `email` as a string and valid email, up to 256 characters.
+   with:
 
-    If the requirements are not meet the service with return an 422 error.
+   - `name` as a string, up to 256 characters,
+   - `email` as a string and valid email, up to 256 characters.
+
+   If the requirements are not meet the service with return an 422 error.
 
 To use those endpoints you need to be authenticated with a Bearer token that
 is a JWT token using `HS256` and the configured key, with a property `roles`
@@ -29,7 +30,7 @@ collections.
 ## Deployment
 
 You can deploy the service for local testing on either
-[minikube](https://minikube.sigs.k8s.io/docs/) or  Docker Desktop. This can be
+[minikube](https://minikube.sigs.k8s.io/docs/) or Docker Desktop. This can be
 done with the help of an [Helm](https://helm.sh/) chart.
 
 If you use minikube, first start it:
@@ -43,20 +44,20 @@ Install the chart:
 
 ```shell
 helm repo add thefunny42 https://thefunny42.github.io/charts
-helm install your-name thefunny42/userservice
+helm install dev thefunny42/userservice
 ```
 
 Alternatively you can install it from a clone from this repository:
 
 ```shell
-helm install your-name charts/userservice
+helm install dev charts/userservice
 ```
 
 You can verify that everything is running:
 
 ```shell
-helm test your-name
-kubectl get all -l app.kubernetes.io/instance=your-name
+helm test dev
+kubectl get all -l app.kubernetes.io/instance=dev
 ```
 
 If you use minikube, run tunnel in a terminal to be able to access the
@@ -71,14 +72,14 @@ There is a convenience script to obtain a token.
 You can list the users:
 
 ```shell
-MY_TOKEN=$(kubectl exec service/your-name-userservice -- /app/bin/new-user-service-token)
+MY_TOKEN=$(kubectl exec service/dev-userservice -- /app/bin/new-user-service-token)
 curl -H "Authorization: Bearer $MY_TOKEN" http://localhost:8000/api/users
 ```
 
 You can add a user:
 
 ```shell
-MY_TOKEN=$(kubectl exec service/your-name-userservice -- /app/bin/new-user-service-token admin)
+MY_TOKEN=$(kubectl exec service/dev-userservice -- /app/bin/new-user-service-token admin)
 curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users
 ```
 
@@ -87,7 +88,7 @@ Alternatively you can use the docs to test the service at http://localhost:8000.
 Cleanup with:
 
 ```shell
-helm uninstall your-name
+helm uninstall dev
 ```
 
 If you use minikube:
