@@ -1,5 +1,6 @@
 from typing import Annotated
 
+import bson
 import motor.motor_asyncio
 import pydantic
 import pymongo.errors
@@ -119,16 +120,31 @@ class UserRepository:
     ):
         self.collection = collection
 
+    @staticmethod
+    def _convert(document):
+        return {
+            "name": document["name"],
+            "email": document["email"],
+            "id": str(document["_id"]),
+        }
+
     async def list(self):
         return [
-            {
-                "name": user["name"],
-                "email": user["email"],
-                "id": str(user["_id"]),
-            }
-            async for user in self.collection.find()
+            self._convert(document)
+            async for document in self.collection.find()
         ]
+
+    async def get(self, id: str | bson.ObjectId):
+        document = await self.collection.find_one({"_id": bson.ObjectId(id)})
+        if document is None:
+            return None
+        return self._convert(document)
+
+    async def delete(self, id: str | bson.ObjectId):
+        result = await self.collection.delete_one({"_id": bson.ObjectId(id)})
+        return result.acknowledged and result.deleted_count == 1
 
     async def add(self, user: models.User):
         result = await self.collection.insert_one(user.model_dump())
-        return result.acknowledged
+        if result.acknowledged:
+            return await self.get(result.inserted_id)

@@ -32,11 +32,24 @@ class MockUserRepository(models.Users):
 
     async def add(self, user: models.User):
         if user.name == "Tonio":
-            return False
-        self.users.append(
-            models.IdentifiedUser(id=str(len(self.users)), **user.model_dump())
+            return None
+        added_user = models.IdentifiedUser(
+            id=str(len(self.users)), **user.model_dump()
         )
-        return True
+        self.users.append(added_user)
+        return added_user.model_dump()
+
+    async def get(self, id: str):
+        for user in self.users:
+            if user.id == id:
+                return user.model_dump()
+
+    async def delete(self, id: str):
+        for user in self.users:
+            if user.id == id:
+                self.users.remove(user)
+                return True
+        return False
 
     async def list(self):
         return [user.model_dump() for user in self.users]

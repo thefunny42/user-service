@@ -5,9 +5,14 @@ def test_metrics(client):
     response = client.get("/metrics")
     assert response.status_code == 200
     metrics = response.text.splitlines()
-    assert "# TYPE userservice_added_users_created gauge" in metrics
-    assert "# TYPE userservice_added_users_failures_created gauge" in metrics
+    assert "# TYPE userservice_add_user_created gauge" in metrics
+    assert "# TYPE userservice_add_user_failures_created gauge" in metrics
+    assert "# TYPE userservice_delete_user_created gauge" in metrics
+    assert "# TYPE userservice_delete_user_failures_created gauge" in metrics
+    assert "# TYPE userservice_get_user_created gauge" in metrics
+    assert "# TYPE userservice_get_user_failures_created gauge" in metrics
     assert "# TYPE userservice_list_users_created gauge" in metrics
+    assert "# TYPE userservice_list_users_failures_created gauge" in metrics
 
 
 def test_health(client):

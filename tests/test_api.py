@@ -6,6 +6,49 @@ from user_service import models
 
 
 @pytest.mark.asyncio
+async def test_get_user(mocked_client, mocked_users, mocked_opa_allow, token):
+    added = await mocked_users.add(
+        models.User(name="Arthur Accroc", email="arthur@example.com")
+    )
+
+    response = mocked_client.get(f"/api/users/{added['id']}", auth=token)
+    assert response.status_code == 200
+    assert response.json() == {
+        "name": "Arthur Accroc",
+        "email": "arthur@example.com",
+        "id": "0",
+    }
+    assert mocked_opa_allow.called
+    assert len(mocked_opa_allow.calls) == 1
+    assert json.loads(mocked_opa_allow.calls[0].request.content) == {
+        "input": {
+            "method": "GET",
+            "path": ["api", "users", "0"],
+            "roles": [],
+        }
+    }
+
+
+def test_get_user_not_found(
+    mocked_client, mocked_users, mocked_opa_allow, token
+):
+    assert len(mocked_users.users) == 0
+
+    response = mocked_client.get("/api/users/42", auth=token)
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not Found"}
+    assert mocked_opa_allow.called
+    assert len(mocked_opa_allow.calls) == 1
+    assert json.loads(mocked_opa_allow.calls[0].request.content) == {
+        "input": {
+            "method": "GET",
+            "path": ["api", "users", "42"],
+            "roles": [],
+        }
+    }
+
+
+@pytest.mark.asyncio
 async def test_get_users(mocked_client, mocked_users, mocked_opa_allow, token):
     await mocked_users.add(
         models.User(name="Arthur Accroc", email="arthur@example.com")
@@ -132,6 +175,53 @@ def test_get_users_failed_token(mocked_client, mocked_opa_fail, token):
     assert mocked_opa_fail.called
 
 
+@pytest.mark.asyncio
+async def test_delete_user(
+    mocked_client, mocked_opa_allow, mocked_users, admin_token
+):
+    added = await mocked_users.add(
+        models.User(name="Arthur Accroc", email="arthur@example.com")
+    )
+
+    assert len(mocked_users.users) == 1
+
+    response = mocked_client.delete(
+        f"/api/users/{added['id']}", auth=admin_token
+    )
+    assert response.status_code == 200
+    assert response.json() is None
+    assert len(mocked_users.users) == 0
+    assert mocked_opa_allow.called
+    assert len(mocked_opa_allow.calls) == 1
+    assert json.loads(mocked_opa_allow.calls[0].request.content) == {
+        "input": {
+            "method": "DELETE",
+            "path": ["api", "users", "0"],
+            "roles": ["admin"],
+        }
+    }
+
+
+def test_delete_user_not_found(
+    mocked_client, mocked_opa_allow, mocked_users, admin_token
+):
+    assert len(mocked_users.users) == 0
+
+    response = mocked_client.delete("/api/users/42", auth=admin_token)
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not Found"}
+    assert len(mocked_users.users) == 0
+    assert mocked_opa_allow.called
+    assert len(mocked_opa_allow.calls) == 1
+    assert json.loads(mocked_opa_allow.calls[0].request.content) == {
+        "input": {
+            "method": "DELETE",
+            "path": ["api", "users", "42"],
+            "roles": ["admin"],
+        }
+    }
+
+
 def test_add_users(mocked_client, mocked_opa_allow, mocked_users, admin_token):
     assert mocked_users.users == []
 
@@ -141,6 +231,11 @@ def test_add_users(mocked_client, mocked_opa_allow, mocked_users, admin_token):
         auth=admin_token,
     )
     assert response.status_code == 201
+    assert response.json() == {
+        "email": "ford@example.com",
+        "id": "0",
+        "name": "Ford Perfect",
+    }
     assert mocked_users.users == [
         models.IdentifiedUser(
             name="Ford Perfect", email="ford@example.com", id="0"

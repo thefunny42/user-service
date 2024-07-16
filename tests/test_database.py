@@ -8,20 +8,30 @@ from user_service.database import UnavailableError
 async def test_user_repository(users, mocker):
     assert await users.list() == []
 
-    await users.add(
+    added = await users.add(
         models.User(name="Arthur Accroc", email="arthur@example.com")
     )
+    assert added == {
+        "name": "Arthur Accroc",
+        "email": "arthur@example.com",
+        "id": mocker.ANY,
+    }
     assert await users.list() == [
         {
             "name": "Arthur Accroc",
             "email": "arthur@example.com",
-            "id": mocker.ANY,
+            "id": added["id"],
         }
     ]
+    assert await users.get(added["id"]) == added
+    assert await users.delete(added["id"]) is True
+    assert await users.list() == []
+    assert await users.get(added["id"]) is None
+    assert await users.delete(added["id"]) is False
 
 
 @pytest.mark.asyncio
-async def test_read(database):
+async def test_database_ready(database):
     collection = await database.ready(autocreate=True)
     assert collection.name == "User"
 
@@ -37,9 +47,20 @@ async def test_read(database):
 async def test_mocked_user_repository(mocked_users):
     assert await mocked_users.list() == []
 
-    await mocked_users.add(
+    added = await mocked_users.add(
         models.User(name="Arthur Accroc", email="arthur@example.com")
     )
+    assert added == {
+        "name": "Arthur Accroc",
+        "email": "arthur@example.com",
+        "id": "0",
+    }
     assert await mocked_users.list() == [
         {"name": "Arthur Accroc", "email": "arthur@example.com", "id": "0"}
     ]
+
+    assert await mocked_users.get(added["id"]) == added
+    assert await mocked_users.delete(added["id"]) is True
+    assert await mocked_users.list() == []
+    assert await mocked_users.get(added["id"]) is None
+    assert await mocked_users.delete(added["id"]) is False
