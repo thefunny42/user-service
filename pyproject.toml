@@ -23,6 +23,9 @@ fail_under = 100
 [tool.hatch.version]
 path = "src/user_service/main.py"
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
 

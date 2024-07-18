@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import ORJSONResponse
+from whtft.metrics import Metrics
 
 from . import database, models, security
-from .utils import Metrics
 
 router = APIRouter(
     prefix="/api", dependencies=[Depends(security.validate_token)]
