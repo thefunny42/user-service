@@ -18,12 +18,17 @@ RUN PIPX_DEFAULT_PYTHON=/usr/local/bin/python3 pipx install hatch coverage
 
 EXPOSE 8000
 
-FROM base AS final
+FROM base AS build
 
+RUN apk add --no-cache git
 RUN /usr/local/bin/python3 -m venv /app
 RUN --mount=type=bind,source=.,target=src,rw  \
     --mount=type=cache,target=/root/.cache \
     cd src && /app/bin/pip install -r requirements.txt .
+
+FROM base AS final
+
+COPY --from=build /app /app
 
 RUN addgroup --system --gid 1000 python
 RUN adduser --system --uid 1000 -G python -H python
