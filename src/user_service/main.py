@@ -3,8 +3,7 @@ from contextlib import asynccontextmanager
 import whtft.app
 from fastapi import FastAPI, HTTPException, status
 
-from . import api, database
-from .settings import get_settings
+from . import api, database, settings
 
 __version__ = "0.2.0"
 
@@ -37,4 +36,4 @@ app.include_router(api.router)
 
 
 def main():  # pragma: no cover
-    whtft.app.main(app, get_settings())
+    whtft.app.main(app, settings.settings)

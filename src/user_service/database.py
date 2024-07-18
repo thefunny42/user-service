@@ -7,7 +7,7 @@ import pymongo.errors
 from fastapi import Depends
 
 from . import models
-from .settings import Settings, get_settings
+from .settings import Settings, settings
 
 COLLECTIONS: dict[str, motor.motor_asyncio.AsyncIOMotorCollection] = {}
 CLIENTS: dict[str, motor.motor_asyncio.AsyncIOMotorClient] = {}
@@ -85,7 +85,7 @@ class Connector[T: type[pydantic.BaseModel]]:
     database: Database[T] | None = None
     model: T
 
-    def __init__(self, settings: Annotated[Settings, Depends(get_settings)]):
+    def __init__(self, settings: Settings):
         self.settings = settings
 
     def connect(self):
@@ -103,7 +103,7 @@ class UserConnector(Connector):
     model = models.User
 
 
-connector = UserConnector(get_settings())
+connector = UserConnector(settings)
 
 
 async def get_collection():

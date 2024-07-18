@@ -3,12 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import ORJSONResponse
 from whtft.metrics import Metrics
+from whtft.security import Checker
 
-from . import database, models, security
+from . import database, models, settings
 
-router = APIRouter(
-    prefix="/api", dependencies=[Depends(security.validate_token)]
-)
+security = Checker(settings.settings)
+
+router = APIRouter(prefix="/api", dependencies=[Depends(security)])
 
 metrics = Metrics(prefix="userservice")
 

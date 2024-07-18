@@ -6,10 +6,10 @@ import pydantic_core
 import pytest
 import pytest_asyncio
 import respx
+import whtft.security
 
-from user_service import main, models, security
-from user_service.database import UserRepository, connector, get_collection
-from user_service.settings import Settings, get_settings
+from user_service import api, database, main, models
+from user_service.settings import Settings
 
 # This contains the private key so we can generate tokens.
 TEST_JWKS_URL = "http://somewhere/.well-known/jwks.json"
@@ -55,54 +55,44 @@ class MockUserRepository(models.Users):
         return [user.model_dump() for user in self.users]
 
 
-class BearerAuth(httpx.Auth):
-
-    def __init__(self, token: str):
-        self.token = token
-
-    def auth_flow(self, request):
-        request.headers["Authorization"] = f"Bearer {self.token}"
-        yield request
+@pytest.fixture(scope="module")
+def checker():
+    return whtft.security.Checker(Settings())
 
 
 @pytest.fixture(scope="module")
-def settings():
-    return Settings()
-
-
-@pytest.fixture(scope="module")
-def jwks_settings():
-    return Settings(
-        user_service_key=None,
-        user_service_jwks_url=pydantic_core.Url(TEST_JWKS_URL),
+def jwks_checker():
+    return whtft.security.Checker(
+        Settings(
+            authentication_key=None,
+            authentication_jwks_url=pydantic_core.Url(TEST_JWKS_URL),
+        )
     )
 
 
 @pytest.fixture(scope="module")
 def invalid_token():
-    return BearerAuth(secrets.token_urlsafe(16))
+    return whtft.security.BearerAuth(secrets.token_urlsafe(16))
 
 
 @pytest_asyncio.fixture()
-async def token(settings):
-    return BearerAuth(await security.Auth(settings).generate_token())
+async def token(checker):
+    return await checker.generate_token()
 
 
 @pytest_asyncio.fixture()
-async def jwks_token(mocked_jwks, jwks_settings):
-    return BearerAuth(await security.Auth(jwks_settings).generate_token())
+async def jwks_token(mocked_jwks, jwks_checker):
+    return await jwks_checker.generate_token()
 
 
 @pytest_asyncio.fixture()
-async def admin_token(settings):
-    return BearerAuth(await security.Auth(settings).generate_token("admin"))
+async def admin_token(checker):
+    return await checker.generate_token("admin")
 
 
 @pytest_asyncio.fixture()
-async def jwks_admin_token(mocked_jwks, jwks_settings):
-    return BearerAuth(
-        await security.Auth(jwks_settings).generate_token("admin")
-    )
+async def jwks_admin_token(mocked_jwks, jwks_checker):
+    return await jwks_checker.generate_token("admin")
 
 
 @pytest.fixture()
@@ -111,17 +101,17 @@ def mocked_users():
 
 
 @pytest_asyncio.fixture
-async def database():
-    yield connector.connect()
-    connector.close()
+async def connection():
+    yield database.connector.connect()
+    database.connector.close()
 
 
 @pytest_asyncio.fixture
 async def users():
-    collection = await get_collection()
-    yield UserRepository(collection)
+    collection = await database.get_collection()
+    yield database.UserRepository(collection)
     await collection.drop()
-    connector.close()
+    database.connector.close()
 
 
 @pytest_asyncio.fixture
@@ -132,20 +122,24 @@ async def client():
 
 
 @pytest_asyncio.fixture
-async def mocked_client(mocked_users, settings):
+async def mocked_client(mocked_users, checker):
     "This client will use a mocked user source and not mongoDB"
-    main.app.dependency_overrides[get_settings] = lambda: settings
-    main.app.dependency_overrides[UserRepository] = lambda: mocked_users
+    main.app.dependency_overrides[api.security] = checker
+    main.app.dependency_overrides[database.UserRepository] = (
+        lambda: mocked_users
+    )
     with fastapi.testclient.TestClient(main.app) as client:
         yield client
 
 
 @pytest_asyncio.fixture
-async def jwks_mocked_client(mocked_users, jwks_settings):
+async def jwks_mocked_client(mocked_users, jwks_checker):
     """This client will use a mocked user source and not mongoDB and use jwks
     keys"""
-    main.app.dependency_overrides[get_settings] = lambda: jwks_settings
-    main.app.dependency_overrides[UserRepository] = lambda: mocked_users
+    main.app.dependency_overrides[api.security] = jwks_checker
+    main.app.dependency_overrides[database.UserRepository] = (
+        lambda: mocked_users
+    )
     with fastapi.testclient.TestClient(main.app) as client:
         yield client
 
@@ -159,16 +153,8 @@ def mocked_jwks():
 
 
 @pytest.fixture
-def mocked_jwks_failed(mocked_jwks):
-    mocked_jwks.return_value = httpx.Response(500)
-    security.get_keys.cache_clear()
-    yield mocked_jwks
-    security.get_keys.cache_clear()
-
-
-@pytest.fixture
-def mocked_opa(settings):
-    with respx.mock(base_url=settings.authorization_url) as mock:
+def mocked_opa(checker):
+    with respx.mock(base_url=checker.settings.authorization_url) as mock:
         yield mock.post(name="opa")
 
 

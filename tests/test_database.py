@@ -31,16 +31,16 @@ async def test_user_repository(users, mocker):
 
 
 @pytest.mark.asyncio
-async def test_database_ready(database):
-    collection = await database.ready(autocreate=True)
+async def test_database_ready(connection):
+    collection = await connection.ready(autocreate=True)
     assert collection.name == "User"
 
-    collection = await database.ready()
+    collection = await connection.ready()
     assert collection.name == "User"
 
     collection.drop()
     with pytest.raises(UnavailableError):
-        await database.ready(autocreate=False)
+        await connection.ready(autocreate=False)
 
 
 @pytest.mark.asyncio

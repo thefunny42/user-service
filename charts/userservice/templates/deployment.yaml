@@ -46,24 +46,24 @@ spec:
                 configMapKeyRef:
                   name: {{ include "userservice.fullname" . }}
                   key: user_service_database
-            - name: USER_SERVICE_ISSUER
+            - name: AUTHENTICATION_ISSUER
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "userservice.fullname" . }}
-                  key: user_service_issuer
+                  key: authentication_issuer
             {{- if .Values.jwksUrl }}
-            - name: USER_SERVICE_JWKS_URL
+            - name: AUTHENTICATION_JWKS_URL
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "userservice.fullname" . }}
-                  key: user_service_jwks_url
+                  key: authentication_jwks_url
             {{- end }}
             {{- if .Values.audience }}
-            - name: USER_SERVICE_AUDIENCE
+            - name: AUTHENTICATION_AUDIENCE
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "userservice.fullname" . }}
-                  key: user_service_audience
+                  key: authentication_audience
             {{- end }}
             - name: AUTHORIZATION_ENDPOINT
               valueFrom:
@@ -93,7 +93,7 @@ spec:
             secretName: {{ include "userservice.fullname" . }}
             items:
             - key: key
-              path: user_service_key
+              path: authentication_key
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

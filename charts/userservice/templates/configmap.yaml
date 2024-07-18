@@ -13,10 +13,10 @@ data:
 {{- else }}
   user_service_database: "{{ tpl .Values.databaseUrl . | required "Need a database URL" }}"
 {{- end }}
-  user_service_issuer: {{ tpl (required  "An issuer is required" .Values.issuer) . | quote }}
+  authentication_issuer: {{ tpl (required  "An issuer is required" .Values.issuer) . | quote }}
 {{- if .Values.audience }}
-  user_service_audience: {{ tpl .Values.audience . }}
+  authentication_audience: {{ tpl .Values.audience . }}
 {{- end }}
 {{- if .Values.jwksUrl }}
-  user_service_jwks_url: {{ tpl .Values.jwksUrl . }}
+  authentication_jwks_url: {{ tpl .Values.jwksUrl . }}
 {{- end }}

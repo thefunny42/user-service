@@ -6,14 +6,12 @@ dynamic = ["version"]
 authors = [{ name = 'Sylvain Viollon', email = 'thefunny@gmail.com' }]
 requires-python = '>=3.12'
 dependencies = [
-    'cryptography',
-    'async-lru',
     'motor',
     'fastapi',
     'pydantic',
-    'pyjwt',
     'whtft.app @ git+https://github.com/thefunny42/whtft.app@main',
     'whtft.metrics @ git+https://github.com/thefunny42/whtft.metrics@main',
+    'whtft.security @ git+https://github.com/thefunny42/whtft.security@main',
 ]
 
 [project.scripts]

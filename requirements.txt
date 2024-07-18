@@ -44,3 +44,4 @@ watchfiles==0.22.0
 websockets==12.0
 whtft.app @ git+https://github.com/thefunny42/whtft.app@main
 whtft.metrics @ git+https://github.com/thefunny42/whtft.metrics@main
+whtft.security @ git+https://github.com/thefunny42/whtft.security@main
