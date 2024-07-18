@@ -4,11 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import ORJSONResponse
 
 from . import database, models, security
-from .utils import metrics
+from .utils import Metrics
 
 router = APIRouter(
     prefix="/api", dependencies=[Depends(security.validate_token)]
 )
+
+metrics = Metrics(prefix="userservice")
 
 
 @router.post(
@@ -16,7 +18,7 @@ router = APIRouter(
     status_code=status.HTTP_201_CREATED,
     response_class=ORJSONResponse,
 )
-@metrics("add_user", "Add user")
+@metrics.measure()
 async def add_user(
     repository: Annotated[database.UserRepository, Depends()],
     user: models.User,
@@ -33,7 +35,7 @@ async def add_user(
 @router.get(
     "/users", response_model=models.Users, response_class=ORJSONResponse
 )
-@metrics("list_users", "List users")
+@metrics.measure()
 async def list_users(
     repository: Annotated[database.UserRepository, Depends()]
 ):
@@ -46,7 +48,7 @@ async def list_users(
     response_model=models.IdentifiedUser,
     response_class=ORJSONResponse,
 )
-@metrics("get_user", "Get user")
+@metrics.measure()
 async def get_user(
     repository: Annotated[database.UserRepository, Depends()], user_id: str
 ):
@@ -57,7 +59,7 @@ async def get_user(
 
 
 @router.delete("/users/{user_id}")
-@metrics("delete_user", "Delete user")
+@metrics.measure()
 async def delete_user(
     repository: Annotated[database.UserRepository, Depends()], user_id: str
 ):

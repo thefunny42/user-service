@@ -1,25 +1,42 @@
 from functools import wraps
+from prometheus_client import Counter, make_asgi_app
 
-from prometheus_client import Counter
 
+class Metrics:
 
-def metrics(name: str, title: str, prefix="userservice"):
-    success_counter = Counter(f"{prefix}_{name}", f"{title}")
-    failure_counter = Counter(f"{prefix}_{name}_failures", f"{title} failures")
+    def __init__(self, prefix: str):
+        self.prefix = prefix
 
-    def decorator(func):
+    @property
+    def app(self):
+        return make_asgi_app()
 
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            try:
-                result = await func(*args, **kwargs)
-            except Exception as error:
-                failure_counter.inc()
-                raise error
-            else:
-                success_counter.inc()
-                return result
+    def new(self, name: str, doc: str | None):
+        doc = doc or name
+        success = Counter(f"{self.prefix}_{name}", f"{doc}")
+        failure = Counter(f"{self.prefix}_{name}_failures", f"{doc} failures")
+        return (success, failure)
 
-        return wrapper
+    def measure(self, name: str | None = None, doc: str | None = None):
 
-    return decorator
+        def decorator(func):
+
+            success, failure = self.new(
+                name=name or func.__name__,
+                doc=doc or func.__doc__,
+            )
+
+            @wraps(func)
+            async def wrapper(*args, **kwargs):
+                try:
+                    result = await func(*args, **kwargs)
+                except Exception as error:
+                    failure.inc()
+                    raise error
+                else:
+                    success.inc()
+                    return result
+
+            return wrapper
+
+        return decorator
