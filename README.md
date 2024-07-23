@@ -72,14 +72,14 @@ There is a convenience script to obtain a token.
 You can list the users:
 
 ```shell
-MY_TOKEN=$(kubectl exec service/dev-userservice -- /app/bin/new-user-service-token)
+MY_TOKEN=$(kubectl exec service/dev-userservice -- /app/bin/new-authentication-token)
 curl -H "Authorization: Bearer $MY_TOKEN" http://localhost:8000/api/users
 ```
 
 You can add a user:
 
 ```shell
-MY_TOKEN=$(kubectl exec service/dev-userservice -- /app/bin/new-user-service-token admin)
+MY_TOKEN=$(kubectl exec service/dev-userservice -- /app/bin/new-authentication-token admin)
 curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users
 ```
 
@@ -104,8 +104,8 @@ The following configuration variables are available:
 - `AUTHENTICATION_KEY`: JWT key used to authenticate to the service.
 - `AUTHENTICATION_JWKS_URL`: URL to fetch JWKS to validate JWT token (instead of key).
 - `AUTHENTICATION_ISSUER`: Issuer expected in the JWT token used to authenticate.
-- `USER_SERVICE_DATABASE`: URL to the a MongoDB database to store the users.
-- `USER_SERVICE_SIZE`: Number of allowed users.
+- `DEFAULT_DATABASE_URL`: URL to the a MongoDB database to store the users.
+- `DEFAULT_DATABASE_SIZE`: Number of allowed users.
 - `AUTHORIZATION_ENDPOINT`: URL to the OPA server.
 - `AUTHORIZATION_POLICY`: Policy to use on the OPA server (default to userservice).
 - `DEFAULT_LOG_CONFIG`: Custom logging configuration (a default one is provided).
@@ -130,14 +130,14 @@ hatch run user-service
 You can retrieve the list of users:
 
 ```shell
-MY_TOKEN=$(hatch run new-user-service-token)
+MY_TOKEN=$(hatch run new-authentication-token)
 curl -H "Authorization: Bearer $MY_TOKEN" http://localhost:8000/api/users
 ```
 
 You can add a user:
 
 ```shell
-MY_TOKEN=$(hatch run new-user-service-token admin)
+MY_TOKEN=$(hatch run new-authentication-token admin)
 curl -H "Authorization: Bearer $MY_TOKEN" -H 'Content-Type: application/json' -X POST -d '{"name": "Arthur", "email": "arthur@example.com"}' http://localhost:8000/api/users
 ```
 

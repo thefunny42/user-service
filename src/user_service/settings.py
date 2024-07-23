@@ -3,8 +3,8 @@ import whtft.security
 
 
 class Settings(whtft.security.Settings):
-    user_service_database: pydantic.MongoDsn = pydantic.Field(default=...)
-    user_service_size: pydantic.PositiveInt = pydantic.Field(default=10000)
+    default_database_url: pydantic.MongoDsn = pydantic.Field(default=...)
+    default_database_size: pydantic.PositiveInt = pydantic.Field(default=10000)
 
 
 settings = Settings()

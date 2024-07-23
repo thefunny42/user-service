@@ -7,7 +7,7 @@ services:
     image: ghcr.io/thefunny42/user-service:main
     environment:
       - AUTHORIZATION_ENDPOINT=http://opa:8181
-      - USER_SERVICE_DATABASE=mongodb://database:27017/users
+      - DEFAULT_DATABASE_URL=mongodb://database:27017/users
     ports:
       - 8000:8000
   opa:

@@ -9,9 +9,9 @@ data:
   authorization_endpoint: "{{ tpl .Values.authorizationEndpoint . | required "Need an authorization endpoint" }}"
 {{- end }}
 {{- if .Values.tags.mongodb }}
-  user_service_database: "mongodb://{{ include "mongodb.fullname" .Subcharts.mongodb }}:{{ .Values.mongodb.service.ports.mongodb }}/users"
+  default_database_url: "mongodb://{{ include "mongodb.fullname" .Subcharts.mongodb }}:{{ .Values.mongodb.service.ports.mongodb }}/users"
 {{- else }}
-  user_service_database: "{{ tpl .Values.databaseUrl . | required "Need a database URL" }}"
+  default_database_url: "{{ tpl .Values.databaseUrl . | required "Need a database URL" }}"
 {{- end }}
   authentication_issuer: {{ tpl (required  "An issuer is required" .Values.issuer) . | quote }}
 {{- if .Values.audience }}

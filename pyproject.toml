@@ -16,7 +16,6 @@ dependencies = [
 
 [project.scripts]
 user-service = "user_service.main:main"
-new-user-service-token = "user_service.security:main"
 
 [build-system]
 requires = ["hatchling"]

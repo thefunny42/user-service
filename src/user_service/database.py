@@ -41,7 +41,7 @@ class Database[T: type[pydantic.BaseModel]]:
     def __init__(self, settings: Settings, model: T):
         self.settings = settings
         self.client = motor.motor_asyncio.AsyncIOMotorClient(
-            str(self.settings.user_service_database),
+            str(self.settings.default_database_url),
         )
         self.database = self.client.get_default_database()
         self.collection = None
@@ -60,7 +60,7 @@ class Database[T: type[pydantic.BaseModel]]:
         return await self.database.create_collection(
             name=self.name,
             capped=True,
-            size=self.settings.user_service_size,
+            size=self.settings.default_database_size,
             writeConcern={"w": 1, "j": True, "wtimeout": 10},
             validator={
                 "$jsonSchema": _prepare_schema(self.model.model_json_schema())
