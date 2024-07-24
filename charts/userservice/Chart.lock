@@ -3,7 +3,7 @@ dependencies:
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 15.6.11
 - name: opa
-  repository: file://../opa
+  repository: https://thefunny42.github.io/charts
   version: 0.66.0
-digest: sha256:5574126346eb45d24a267bc98bad2da91a34120468f9c431f72dda9b2319e220
-generated: "2024-07-14T14:40:28.3298131+02:00"
+digest: sha256:668850ebbf9f7e83b3fefc77953c08c7e4911aeda4df01d4b70b11cf57ad1ef1
+generated: "2024-07-24T19:23:09.4973092+02:00"

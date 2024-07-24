@@ -12,6 +12,6 @@ dependencies:
       - mongodb
   - name: opa
     version: "0.66.0"
-    repository: "file://../opa"
+    repository: "https://thefunny42.github.io/charts"
     tags:
       - opa
