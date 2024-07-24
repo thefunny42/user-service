@@ -18,7 +18,7 @@ image:
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: &userservice-name "{{ .Release.Name}}-userservice"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -89,3 +89,7 @@ mongodb:
     enabled: false
   metrics:
     enabled: true
+
+opa:
+  policies:
+    userservice.rego: *userservice-name

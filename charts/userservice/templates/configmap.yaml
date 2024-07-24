@@ -20,3 +20,5 @@ data:
 {{- if .Values.jwksUrl }}
   authentication_jwks_url: {{ tpl .Values.jwksUrl . }}
 {{- end }}
+  userservice.rego: |-
+    {{- $.Files.Get "policies/userservice.rego" | nindent 4 }}

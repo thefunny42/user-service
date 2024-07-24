@@ -12,7 +12,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -31,7 +30,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ['/opa', 'run', '--server', '--disable-telemetry', '--set=decision_logs.console=true', '/policies']
+          command: ['/opa', 'run', '--server', '--disable-telemetry', '--set=decision_logs.console=true', '/policies/rego']
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -44,16 +43,19 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: policies
-              mountPath: /policies/userservice.rego
-              subPath: userservice.rego
+              mountPath: "/policies"
               readOnly: true
       volumes:
         - name: policies
-          configMap:
-            name: {{ include "opa.fullname" . }}
-            items:
-              - key: userservice.rego
-                path: userservice.rego
+          projected:
+            sources:
+            {{- range $name, $policy := .Values.policies }}
+            - configMap:
+                name: {{ tpl $policy $ }}
+                items:
+                - key: {{ $name | quote }}
+                  path: {{ printf "rego/%s" $name | quote }}
+            {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
