@@ -45,7 +45,8 @@
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
       "upgradePackages": "true"
-    }
+    },
+    "./k8s-tools-alpine": {}
   },
   "forwardPorts": [
     8000
