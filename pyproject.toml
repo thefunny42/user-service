@@ -8,7 +8,7 @@ requires-python = '>=3.12'
 dependencies = [
     'motor',
     'fastapi',
-    'pydantic',
+    'pydantic[email]',
     'whtft.app @ git+https://github.com/thefunny42/whtft.app@main',
     'whtft.metrics @ git+https://github.com/thefunny42/whtft.metrics@main',
     'whtft.security @ git+https://github.com/thefunny42/whtft.security@main',
