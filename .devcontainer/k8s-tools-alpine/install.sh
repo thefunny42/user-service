@@ -15,8 +15,8 @@ apk --no-cache add \
     docker-bash-completion \
     socat
 
-if false ; then
-    apk --no-cache add make go
+if test "$TELEPRESENCE" = "true"; then
+    apk --no-cache add make go iptables
 
     # We need to build this from the sources.
     TELEPRESENCE_VERSION='v2.19.1'
@@ -59,6 +59,12 @@ else
     sed -i -e "s/127.0.0.1/host.docker.internal/g" ${_REMOTE_USER_HOME}/.kube/config
 fi
 sudo nohup setsid socat UNIX-LISTEN:/var/run/docker.sock,fork,mode=660,user=${_REMOTE_USER} UNIX-CONNECT:/var/run/docker-host.sock 2>/dev/null >/dev/null
+if test -f /usr/local/bin/telepresence; then
+    sudo mkdir -p /dev/net
+    sudo mkdir -p /var/run/telepresence/{logs,config}
+    sudo mknod /dev/net/tun c 10 200
+    sudo nohup setsid sh -c 'telepresence daemon-foreground /var/run/telepresence/logs /var/run/telepresence/config 2>/var/run/telepresence/logs/daemon.log >/var/run/telepresence/logs/daemon.log' 2>/dev/null >/dev/null
+fi
 EOF
 
 chmod +x "$TOOLING_SH"

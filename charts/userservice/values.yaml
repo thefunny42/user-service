@@ -42,6 +42,10 @@ securityContext:
   capabilities:
     drop:
       - all
+    # This is for telepresence
+    add:
+      - NET_ADMIN
+      - NET_BIND_SERVICE
   readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   runAsNonRoot: true
