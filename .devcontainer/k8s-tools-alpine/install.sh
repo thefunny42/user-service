@@ -1,30 +1,40 @@
 #!/usr/bin/env bash
 
 TOOLING_SH="/usr/local/bin/tooling.sh"
+TELEPRESENCE_VERSION='v2.19.1'
 _REMOTE_MINIKUBE_CONFIG="/usr/local/share/minikube-remote"
 _REMOTE_KUBE_CONFIG="/usr/local/share/kube-remote"
 _REMOTE_IP=$(nslookup -type=a host.docker.internal  | grep Address | tail -n 1 | cut -d ' ' -f 2)
 
-apk --no-cache add \
-    kubectl \
-    kubectl-bash-completion \
-    helm \
-    docker-cli \
-    docker-cli-buildx \
-    docker-cli-compose \
-    docker-bash-completion \
-    socat
+. /etc/os-release
 
-if test "$TELEPRESENCE" = "true"; then
-    apk --no-cache add make go iptables
+install_alpine() {
+    apk --no-cache add \
+        kubectl \
+        kubectl-zsh-completion \
+        helm \
+        docker-cli \
+        docker-cli-buildx \
+        docker-cli-compose \
+        docker-zsh-completion \
+        socat
 
-    # We need to build this from the sources.
-    TELEPRESENCE_VERSION='v2.19.1'
-    git clone https://github.com/telepresenceio/telepresence.git -b $TELEPRESENCE_VERSION /tmp/telepresence
-    make -C /tmp/telepresence TELEPRESENCE_VERSION=$TELEPRESENCE_VERSION bindir=/usr/local/bin install
-    rm -rf /tmp/telepresence
-    apk --no-cache del make go
-fi
+    if test "$TELEPRESENCE" = "true"; then
+        apk --no-cache add make go iptables
+
+        # We need to build this from the sources.
+        git clone https://github.com/telepresenceio/telepresence.git -b $TELEPRESENCE_VERSION /tmp/telepresence
+        make -C /tmp/telepresence TELEPRESENCE_VERSION=$TELEPRESENCE_VERSION bindir=/usr/local/bin install
+        rm -rf /tmp/telepresence
+        apk --no-cache del make go
+    fi
+}
+
+case "${ID}" in
+    "alpine")
+        install_alpine
+        ;;
+esac
 
 cat >"$TOOLING_SH" <<EOF
 #!/usr/bin/env bash

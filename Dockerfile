@@ -8,13 +8,14 @@ RUN mkdir /app/conf
 
 FROM base AS dev
 
-RUN apk add --no-cache zsh pipx gcc linux-headers musl-dev shadow
+RUN apk add --no-cache zsh gcc linux-headers musl-dev shadow
 RUN addgroup --system --gid 1000 python
 RUN adduser --system --uid 1000 -G python python
 RUN chsh -s /bin/zsh python
 
 USER 1000:1000
-RUN PIPX_DEFAULT_PYTHON=/usr/local/bin/python3 pipx install hatch coverage
+RUN python -m pip install --user pipx
+RUN /home/python/.local/bin/pipx install hatch coverage
 
 EXPOSE 8000
 
