@@ -5,6 +5,8 @@ services:
     build:
       context: .
     image: ghcr.io/thefunny42/user-service:main
+    mem_reservation: 1g
+    mem_limit: 4g
     environment:
       - AUTHORIZATION_ENDPOINT=http://opa:8181
       - DEFAULT_DATABASE_URL=mongodb://database:27017/users
@@ -12,6 +14,8 @@ services:
       - 8000:8000
   opa:
     image: openpolicyagent/opa:edge
+    mem_reservation: 50m
+    mem_limit: 100m
     command:
     - "run"
     - "--server"
@@ -25,6 +29,8 @@ services:
         target: /policies
   database:
     image: mongo:7-jammy
+    mem_reservation: 300m
+    mem_limit: 1g
     volumes:
       - database:/data/db
     ports:

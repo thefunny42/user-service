@@ -43,9 +43,6 @@
     }
   },
   "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "upgradePackages": "true"
-    },
     "ghcr.io/thefunny42/features/k8s-tools": {
       "telepresence": true
     }
