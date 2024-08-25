@@ -46,7 +46,7 @@
     "ghcr.io/devcontainers/features/common-utils:2": {
       "upgradePackages": "true"
     },
-    "./k8s-tools-alpine": {
+    "ghcr.io/thefunny42/features/k8s-tools": {
       "telepresence": true
     }
   },
